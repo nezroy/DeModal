@@ -34,7 +34,8 @@ local frameXML = {
     "TabardFrame",
     "GuildRegistrarFrame",
     "ItemTextFrame",
-    "PetStableFrame"
+    "PetStableFrame",
+    "GuildInviteFrame"
 }
 
 -- frames loaded with specific blizzard addons
@@ -51,7 +52,7 @@ local addonFrames = {
     Blizzard_Communities = {"CommunitiesFrame", "CommunitiesGuildLogFrame", "CommunitiesGuildTextEditFrame", "CommunitiesGuildNewsFiltersFrame"},
     Blizzard_EncounterJournal = {"EncounterJournal"},
     Blizzard_FlightMap = {"FlightMapFrame"},
-    Blizzard_GarrisonUI = {"GarrisonMissionFrame", "GarrisonBuildingFrame", "GarrisonShipyardFrame", "GarrisonRecruiterFrame", "GarrisonRecruitSelectFrame", "GarrisonCapacitiveDisplayFrame", "OrderHallMissionFrame", "GarrisonLandingPage", "BFAMissionFrame"},
+    Blizzard_GarrisonUI = {"GarrisonMissionFrame", "GarrisonBuildingFrame", "GarrisonShipyardFrame", "GarrisonRecruiterFrame", "GarrisonRecruitSelectFrame", "GarrisonCapacitiveDisplayFrame", "OrderHallMissionFrame", "GarrisonLandingPage", "BFAMissionFrame", "CovenantMissionFrame"},
     Blizzard_GuildBankUI = {"GuildBankFrame"},
     Blizzard_GuildControlUI = {"GuildControlUI"},
     Blizzard_InspectUI = {"InspectFrame"},
@@ -59,6 +60,7 @@ local addonFrames = {
     Blizzard_ItemSocketingUI = {"ItemSocketingFrame"},
     Blizzard_ItemUpgradeUI = {"ItemUpgradeFrame"},
     Blizzard_OrderHallUI = {"OrderHallTalentFrame"},
+    Blizzard_RuneforgeUI = {"RuneforgeFrame"},
     Blizzard_ScrappingMachineUI = {"ScrappingMachineFrame"},
     Blizzard_Soulbinds = {"SoulbindViewer"},
     Blizzard_TalentUI = {"PlayerTalentFrame"},
