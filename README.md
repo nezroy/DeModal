@@ -33,7 +33,7 @@ Isn't this just [BlizzMove](https://www.curseforge.com/wow/addons/blizzmove)? Th
 
 The Collections panel is only movable when the [Better Wardrobe](https://www.curseforge.com/wow/addons/better-wardrobe-and-transmog) addon is installed. This will eventually be fixed once I figure out what this addon does to the collections panel to make it behave nicely.
 
-When certain protected panels are opened for the first time while in combat, DeModal cannot initially modifty their behavior. These windows should get properly DeModal-fied once exiting combat. This is working as intended and is a fundamental limitation of working with protected frames in the WoW API.
+When certain protected panels are opened for the first time while in combat, DeModal cannot initially modify their behavior. These windows should get properly DeModal-fied once exiting combat. This is working as intended and is a fundamental limitation of working with protected frames in the WoW API.
 
 ### TROUBLESHOOTING
 
