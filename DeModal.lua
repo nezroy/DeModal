@@ -5,7 +5,7 @@ local AFP = PKG.AddForProfiling
 
 -- global API for this addon
 DEMODAL_ADDON = {}
-DEMODAL_ADDON.VERSION_STRING = "DeModal 0.5.0"
+DEMODAL_ADDON.VERSION_STRING = "DeModal @project-version@"
 
  -- main event frame
 local MF = CreateFrame("Frame", nil, UIParent)

@@ -1,0 +1,4 @@
+package-as: DeModal
+
+ignore:
+    - screenshots
