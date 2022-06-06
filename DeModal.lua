@@ -3,9 +3,12 @@ local _, PKG = ...
 local Debug = PKG.Debug
 local AFP = PKG.AddForProfiling
 
-local MF = CreateFrame("Frame", nil, UIParent) -- Main event frame
+-- global API for this addon
+DEMODAL_ADDON = {}
+DEMODAL_ADDON.VERSION_STRING = "DeModal 0.5.0"
 
-PKG.VERSION_STRING = "DeModal @project-version@"
+ -- main event frame
+local MF = CreateFrame("Frame", nil, UIParent)
 
 -- flag tracking whether addon has finished initial loading
 local loaded = false
@@ -59,6 +62,7 @@ local addonFrames = {
     Blizzard_IslandsQueueUI = {"IslandsQueueFrame"},
     Blizzard_ItemSocketingUI = {"ItemSocketingFrame"},
     Blizzard_ItemUpgradeUI = {"ItemUpgradeFrame"},
+    Blizzard_MacroUI = {"MacroFrame"},
     Blizzard_OrderHallUI = {"OrderHallTalentFrame"},
     Blizzard_RuneforgeUI = {"RuneforgeFrame"},
     Blizzard_ScrappingMachineUI = {"ScrappingMachineFrame"},
