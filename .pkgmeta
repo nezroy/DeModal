@@ -1,0 +1,5 @@
+package-as: DeModal
+ignore:
+  - screenshots
+  - assets
+  - README.md
