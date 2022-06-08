@@ -201,7 +201,11 @@ local function hookMovable(f, fName, wasArea)
             lp:SetSize(2, 2)
             lp.Debug = protectedDebugMethod
             if fName == "SpellBookFrame" then
-                lp:SetAttribute("CloseButtonName", "SpellBookFrameCloseButton")
+                if PKG.gameVersion == "tbc" then
+                    lp:SetAttribute("CloseButtonName", "SpellBookCloseButton")
+                else
+                    lp:SetAttribute("CloseButtonName", "SpellBookFrameCloseButton")
+                end
             elseif fName == "CollectionsJournal" then
                 lp:SetAttribute("CloseButtonName", "CollectionsJournalCloseButton")
             end
