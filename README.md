@@ -15,7 +15,7 @@ The WoW API contains all of the underlying code needed to handle user-based wind
   - Group Finder, Adventure Guide, Map and Quest Log
   - Guild, Communities, Mailbox, Friends List
   - Achievements, Calendar
-  - Dressing Room, Inspect, Transmogrify, Collections*
+  - Dressing Room, Inspect, Transmogrify, Collections
   - Garrison, Order Hall, Covenant, Soulbinds
   - more...
 
@@ -30,8 +30,6 @@ There are no settings.
 Isn't this just [BlizzMove](https://www.curseforge.com/wow/addons/blizzmove)? They are similar, but BlizzMove does not fully disable the automatic panel management and does not allow unlimited panels to be open at once. For example, you cannot have the Adventure Guide and Map open at the same time in the default WoW UI *or* with BlizzMove.
 
 ### KNOWN ISSUES
-
-The Collections panel is only movable when the [Better Wardrobe](https://www.curseforge.com/wow/addons/better-wardrobe-and-transmog) addon is installed. This will eventually be fixed once I figure out what this addon does to the collections panel to make it behave nicely.
 
 When certain protected panels are opened for the first time while in combat, DeModal cannot initially modify their behavior. These windows should get properly DeModal-fied once exiting combat. This is working as intended and is a fundamental limitation of working with protected frames in the WoW API.
 

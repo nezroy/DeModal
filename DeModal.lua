@@ -25,9 +25,6 @@ local MF = CreateFrame("Frame", nil, UIParent)
 -- flag tracking whether addon has finished initial loading
 local loaded = false
 
--- flag tracking if BetterWardrobe addon is present
-local hasBetterWardrobe = false
-
 -- protected frames that we only try to mass-close out of combat
 local uiProtectedFrames = {}
 
@@ -142,11 +139,23 @@ local function hook_closeOnClick(self, button, down)
 end
 AFP("hook_closeOnClick", hook_closeOnClick)
 
+local function hookMovableHeader(f, hf)
+    if not f or not hf then
+        return
+    end
+    Debug("hook movable header for frame:", hf:GetName())
+    hf:EnableMouse(true)
+    hf:HookScript("OnDragStart", function () f:StartMoving() end)
+    hf:HookScript("OnDragStop", function () f:StopMovingOrSizing() end)
+    hf:RegisterForDrag("LeftButton")
+end
+AFP("hookMovableHeader", hookMovableHeader)
+
 local function hookMovable(f, fName, wasArea)
     if f:IsProtected() and InCombatLockdown() then
         Debug("defer hook of movable frame:", fName)
         local setWasArea = false
-        if (fName ~= "CollectionsJournal" or hasBetterWardrobe) and UIPanelWindows[fName] and UIPanelWindows[fName]["area"] then
+        if UIPanelWindows[fName] and UIPanelWindows[fName]["area"] then
             -- disable default panel positioning for this frame
             UIPanelWindows[fName]["area"] = nil
             setWasArea = true
@@ -158,14 +167,21 @@ local function hookMovable(f, fName, wasArea)
         Debug("hook movable frame:", fName)
     end
 
+    -- individual frame quirks that need fixing
+    if fName == "WardrobeFrame" then
+        -- prevent circular setpoint refs between transmog and collection frames
+        -- this might cause issues/overlap with the page label in other languages but it should be minor
+        -- and I can't think of an alternative way to do it
+        WardrobeTransmogFrame.ToggleSecondaryAppearanceCheckbox.Label:ClearPointByName("RIGHT")
+        WardrobeTransmogFrame.ToggleSecondaryAppearanceCheckbox.Label:SetWidth(110)
+    end
     if fName == "CollectionsJournal" then
+        -- collection journal is on the "HIGH" strata by default
         f:SetFrameStrata("MEDIUM")
-        if not hasBetterWardrobe then
-            -- TODO: making collectionsjournal movable only works when BetterWardrobe is also
-            -- installed; no clue why, I assume it does something wonky to the frame that I
-            -- don't understand how to replicate yet
-            return
-        end
+    end
+    if fName == "EncounterJournal" and EncounterJournalTooltip then
+        -- prevent circular setpoint refs on EJ's tooltip; gets positioned anyway OnEnter/Show
+        EncounterJournalTooltip:ClearAllPoints()
     end
 
     f:SetMovable(true)
@@ -187,10 +203,6 @@ local function hookMovable(f, fName, wasArea)
         else
             f:SetPoint("CENTER", UIParent)
         end
-    end
-
-    if fName == "EncounterJournal" and EncounterJournalTooltip then
-        EncounterJournalTooltip:ClearAllPoints()
     end
 
     if wasArea or (UIPanelWindows[fName] and UIPanelWindows[fName]["area"]) then
@@ -228,18 +240,6 @@ local function hookMovable(f, fName, wasArea)
 end
 AFP("hookMovable", hookMovable)
 
-local function hookMovableHeader(f, hf)
-    if not f or not hf then
-        return
-    end
-    Debug("hook movable header for frame:", hf:GetName())
-    hf:EnableMouse(true)
-    hf:HookScript("OnDragStart", function () f:StartMoving() end)
-    hf:HookScript("OnDragStop", function () f:StopMovingOrSizing() end)
-    hf:RegisterForDrag("LeftButton")
-end
-AFP("hookMovableHeader", hookMovableHeader)
-
 local function onAddonLoaded(self, addOnName)
     if addOnName == "DeModal" then
         if loaded then
@@ -249,12 +249,6 @@ local function onAddonLoaded(self, addOnName)
         Debug("DeModal ADDON_LOADED event")
 
         PKG.LoadSlashCommands()
-
-        -- check for BetterWardrobe
-        local _, _, _, enabled, _ = GetAddOnInfo("BetterWardrobe")
-        if enabled then
-            hasBetterWardrobe = true
-        end
 
         -- hook CloseWindows for special handling of protected frames
         hooksecurefunc("CloseWindows", hookCloseWindows)

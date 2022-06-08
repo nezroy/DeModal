@@ -1,7 +1,7 @@
 ## Interface: 90205
 ## Title: DeModal
 ## Notes: Make most default Blizz UI panels movable.
-## OptionalDeps: _DebugLog, BugSack, !Stragglers, ACU, BetterWardrobe
+## OptionalDeps: _DebugLog, BugSack, !Stragglers, ACU
 ## Version: @project-version@
 ## X-Website: https://www.curseforge.com/wow/addons/demodal
 ## X-Curse-Project-ID: 631280
