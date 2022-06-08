@@ -43,3 +43,4 @@ If you encounter any serious bugs or missing windows you can try resetting your 
 ![A bunch of overlapping windows](https://github.com/nezroy/DeModal/blob/main/screenshots/lots_of_windows.jpg?raw=true)
 ![Adventure Guide and Map at the same time? Now you can!](https://github.com/nezroy/DeModal/blob/main/screenshots/adventure_guide_and_map.jpg?raw=true)
 ![Look at collections and profession recipes while shopping on the auction house](https://github.com/nezroy/DeModal/blob/main/screenshots/collection_profession_auction.jpg?raw=true)
+![TBC windows](https://github.com/nezroy/DeModal/blob/main/screenshots/tbc_windows.jpg?raw=true)

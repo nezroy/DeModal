@@ -7,6 +7,18 @@ local AFP = PKG.AddForProfiling
 DEMODAL_ADDON = {}
 DEMODAL_ADDON.VERSION_STRING = "DeModal @project-version@"
 
+-- version ID stuff
+PKG.gameVersion = "retail"
+local tocv = select(4, GetBuildInfo())
+if tocv < 20000 then
+    PKG.gameVersion = "classic"
+elseif tocv < 30000 then
+    PKG.gameVersion = "tbc"
+elseif tocv < 40000 then
+    PKG.gameVersion = "wotlk"
+end
+Debug("TOC V", tocv, PKG.gameVersion)
+
  -- main event frame
 local MF = CreateFrame("Frame", nil, UIParent)
 
@@ -24,21 +36,22 @@ local fixProtectedFrames = {}
 
 -- simple frames that should always be pre-loaded
 local frameXML = {
-    "CharacterFrame",
-    "SpellBookFrame",
-    "PVEFrame",
-    "DressUpFrame",
-    "FriendsFrame",
-    "BankFrame",
-    "MailFrame",
-    "GossipFrame",
-    "QuestFrame",
-    "MerchantFrame",
-    "TabardFrame",
-    "GuildRegistrarFrame",
-    "ItemTextFrame",
-    "PetStableFrame",
-    "GuildInviteFrame"
+    {["f"] = "CharacterFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "SpellBookFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "PVEFrame", ["retail"] = true, ["tbc"] = false, ["classic"] = false},
+    {["f"] = "DressUpFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "FriendsFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "BankFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "MailFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "GossipFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "QuestFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "MerchantFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "TabardFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "GuildRegistrarFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "ItemTextFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "PetStableFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
+    {["f"] = "GuildInviteFrame", ["retail"] = true, ["tbc"] = false, ["classic"] = false},
+    {["f"] = "QuestLogFrame", ["retail"] = false, ["tbc"] = true, ["classic"] = true}
 }
 
 -- frames loaded with specific blizzard addons
@@ -47,6 +60,7 @@ local addonFrames = {
     Blizzard_AnimaDiversionUI = {"AnimaDiversionFrame"},
     Blizzard_ArtifactUI = {"ArtifactFrame"},
     Blizzard_AuctionHouseUI = {"AuctionHouseFrame"},
+    Blizzard_AuctionUI = {"AuctionFrame"},
     Blizzard_AzeriteEssenceUI = {"AzeriteEssenceUI"},
     Blizzard_Calendar = {"CalendarFrame"},
     Blizzard_Collections = {"CollectionsJournal", "WardrobeFrame"},
@@ -62,6 +76,7 @@ local addonFrames = {
     Blizzard_IslandsQueueUI = {"IslandsQueueFrame"},
     Blizzard_ItemSocketingUI = {"ItemSocketingFrame"},
     Blizzard_ItemUpgradeUI = {"ItemUpgradeFrame"},
+    Blizzard_LookingForGroupUI = {"LFGParentFrame"},
     Blizzard_MacroUI = {"MacroFrame"},
     Blizzard_OrderHallUI = {"OrderHallTalentFrame"},
     Blizzard_RuneforgeUI = {"RuneforgeFrame"},
@@ -229,13 +244,16 @@ local function onAddonLoaded(self, addOnName)
         hooksecurefunc("CloseWindows", hookCloseWindows)
 
         -- hook pre-loaded simple frames
+        local gv = PKG.gameVersion
         for i = 1, #frameXML do
-            local fName = frameXML[i]
-            local f = _G[ fName ]
-            if f then
-                hookMovable(f, fName)
-            else
-                Debug("missing frame that should not be missing:", fName)
+            if frameXML[i][gv] then
+                local fName = frameXML[i].f
+                local f = _G[ fName ]
+                if f then
+                    hookMovable(f, fName)
+                else
+                    Debug("missing frame that should not be missing:", fName)
+                end
             end
         end
 
