@@ -1,8 +1,5 @@
 local _, PKG = ...
 
---local Debug = PKG.Debug
-local AFP = PKG.AddForProfiling
-
 local function loadSlashCommands()
     _G["SLASH_DEMODALSLASH1"] = "/demodal"
     SlashCmdList["DEMODALSLASH"] = function(msg)
@@ -19,5 +16,4 @@ local function loadSlashCommands()
         end
     end
 end
-AFP("core", "loadSlashCommands", loadSlashCommands)
 PKG.LoadSlashCommands = loadSlashCommands

@@ -6,18 +6,24 @@ local P = Profiler -- the Stragglers CPU Profiler addon
 local function EmptyFunc()
 end
 
-local function AddForProfiling(unit, name, ...)
-    local gName = "DeModal_" .. unit
-    if not _G[ gName ] then
-        _G[ gName ] = {}
+-- Adds local-only function refs into global namespace so that the profiler can "see" them
+-- Only needed for functions that don't go into the addon scope object
+-- Does nothing when the profiling addon is not enabled
+local function AddProfiling(name, func)
+    if not name or type(name) ~= "string" or not func or (type(func) ~= "function" and type(func) ~= "table") then
+        return
     end
-    _G[ gName ][name] = ...
+    local callLine, _ = strsplit("\n", debugstack(2, 1, 0), 2)
+    local unit = gsub(gsub(callLine, '%[string "@Interface\\AddOns\\GW2_UI\\', ""), '%.lua".*', "")
+    unit = gsub(gsub(unit, '\\', "::"), '/', "::")
+    local gName = "DeModal_" .. unit
+    if not _G[gName] then
+        _G[gName] = {}
+    end
+    _G[gName][name] = func
 end
 
 local function Debug(...)
-    if not D then
-        return
-    end
     local msg = ""
     for i = 1, select("#", ...) do
         msg = msg .. tostring(select(i, ...)) .. " "
@@ -26,9 +32,6 @@ local function Debug(...)
 end
 
 local function Trace()
-    if not D then
-        return
-    end
     D.DebugLog("DeModalTrace", "%s", "======== Trace ==")
     for i, v in ipairs({("\n"):split(debugstack(2))}) do
         if v ~= "" then
@@ -49,13 +52,7 @@ else
 end
 
 if P then
-    PKG.AddForProfiling = AddForProfiling
-    if D then
-        AddForProfiling("debug", "AddForProfiling", AddForProfiling)
-        AddForProfiling("debug", "Debug", Debug)
-        AddForProfiling("debug", "Trace", Trace)
-    end
-    --_G.DeModal_addon_scope = PKG
+    PKG.AddProfiling = AddProfiling
 else
-    PKG.AddForProfiling = EmptyFunc
+    PKG.AddProfiling = EmptyFunc
 end

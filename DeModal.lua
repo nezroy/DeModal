@@ -1,7 +1,7 @@
 local _, PKG = ...
 
 local Debug = PKG.Debug
-local AFP = PKG.AddForProfiling
+local AFP = PKG.AddProfiling
 
 -- global API for this addon
 DEMODAL_ADDON = {}
@@ -13,7 +13,7 @@ local tocv = select(4, GetBuildInfo())
 if tocv < 20000 then
     PKG.gameVersion = "classic"
 elseif tocv < 30000 then
-    PKG.gameVersion = "tbc"
+    PKG.gameVersion = "bcc"
 elseif tocv < 40000 then
     PKG.gameVersion = "wotlk"
 end
@@ -36,22 +36,23 @@ local fixProtectedFrames = {}
 
 -- simple frames that should always be pre-loaded
 local frameXML = {
-    {["f"] = "CharacterFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "SpellBookFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "PVEFrame", ["retail"] = true, ["tbc"] = false, ["classic"] = false},
-    {["f"] = "DressUpFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "FriendsFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "BankFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "MailFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "GossipFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "QuestFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "MerchantFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "TabardFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "GuildRegistrarFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "ItemTextFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "PetStableFrame", ["retail"] = true, ["tbc"] = true, ["classic"] = true},
-    {["f"] = "GuildInviteFrame", ["retail"] = true, ["tbc"] = false, ["classic"] = false},
-    {["f"] = "QuestLogFrame", ["retail"] = false, ["tbc"] = true, ["classic"] = true}
+    {["f"] = "CharacterFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "SpellBookFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "PVEFrame", ["retail"] = true, ["bcc"] = false, ["classic"] = false},
+    {["f"] = "DressUpFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "FriendsFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "BankFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "MailFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "GossipFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "QuestFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "MerchantFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "TabardFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "GuildRegistrarFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "ItemTextFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "PetStableFrame", ["retail"] = true, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "GuildInviteFrame", ["retail"] = true, ["bcc"] = false, ["classic"] = false},
+    {["f"] = "QuestLogFrame", ["retail"] = false, ["bcc"] = true, ["classic"] = true},
+    {["f"] = "TaxiFrame", ["retail"] = false, ["bcc"] = true, ["classic"] = true}
 }
 
 -- frames loaded with specific blizzard addons
@@ -60,7 +61,7 @@ local addonFrames = {
     Blizzard_AnimaDiversionUI = {"AnimaDiversionFrame"},
     Blizzard_ArtifactUI = {"ArtifactFrame"},
     Blizzard_AuctionHouseUI = {"AuctionHouseFrame"},
-    Blizzard_AuctionUI = {"AuctionFrame"},
+    Blizzard_AuctionUI = {"AuctionFrame"}, -- bcc
     Blizzard_AzeriteEssenceUI = {"AzeriteEssenceUI"},
     Blizzard_Calendar = {"CalendarFrame"},
     Blizzard_Collections = {"CollectionsJournal", "WardrobeFrame"},
@@ -76,7 +77,7 @@ local addonFrames = {
     Blizzard_IslandsQueueUI = {"IslandsQueueFrame"},
     Blizzard_ItemSocketingUI = {"ItemSocketingFrame"},
     Blizzard_ItemUpgradeUI = {"ItemUpgradeFrame"},
-    Blizzard_LookingForGroupUI = {"LFGParentFrame"},
+    Blizzard_LookingForGroupUI = {"LFGParentFrame"}, -- bcc
     Blizzard_MacroUI = {"MacroFrame"},
     Blizzard_OrderHallUI = {"OrderHallTalentFrame"},
     Blizzard_RuneforgeUI = {"RuneforgeFrame"},
@@ -106,32 +107,40 @@ local function hookCloseWindows(ignoreCenter, frameToIgnore)
         end
     end
 end
-AFP("main", "hookCloseWindows", hookCloseWindows)
+AFP("hookCloseWindows", hookCloseWindows)
 
 local function protectedRaise_OnShow(self)
     if not InCombatLockdown() then
          self:Raise()
     end
 end
-AFP("main", "protectedRaise_OnShow", protectedRaise_OnShow)
+AFP("protectedRaise_OnShow", protectedRaise_OnShow)
 
 local function protectedDebugMethod(self, ...)
     Debug(...)
 end
-AFP("main", "protectedDebugMethod", protectedDebugMethod)
+AFP("protectedDebugMethod", protectedDebugMethod)
 
 local protectedEsc_OnShow = [=[
     local keyEsc = GetBindingKey("TOGGLEGAMEMENU")
     local clsBtn = self:GetAttribute("CloseButtonName")
     if clsBtn and keyEsc ~= nil then
         --self:CallMethod("Debug", "set close button", clsBtn)
-        self:SetBindingClick(false, keyEsc, clsBtn)
+        self:SetBindingClick(false, keyEsc, clsBtn, "ESC")
     end
 ]=]
 
 local protectedEsc_OnHide = [=[
     self:ClearBindings()
 ]=]
+
+local function hook_closeOnClick(self, button, down)
+    if button == "ESC" then
+        -- TODO: not 100% sure this is taint-safe; might need an incombat wrap
+        CloseWindows()
+    end
+end
+AFP("hook_closeOnClick", hook_closeOnClick)
 
 local function hookMovable(f, fName, wasArea)
     if f:IsProtected() and InCombatLockdown() then
@@ -201,20 +210,23 @@ local function hookMovable(f, fName, wasArea)
             lp:SetSize(2, 2)
             lp.Debug = protectedDebugMethod
             if fName == "SpellBookFrame" then
-                if PKG.gameVersion == "tbc" then
+                if PKG.gameVersion == "bcc" then
                     lp:SetAttribute("CloseButtonName", "SpellBookCloseButton")
+                    SpellBookCloseButton:HookScript("OnClick", hook_closeOnClick)
                 else
                     lp:SetAttribute("CloseButtonName", "SpellBookFrameCloseButton")
+                    SpellBookFrameCloseButton:HookScript("OnClick", hook_closeOnClick)
                 end
             elseif fName == "CollectionsJournal" then
                 lp:SetAttribute("CloseButtonName", "CollectionsJournalCloseButton")
+                CollectionsJournalCloseButton:HookScript("OnClick", hook_closeOnClick)
             end
             lp:SetAttribute("_onshow", protectedEsc_OnShow)
             lp:SetAttribute("_onhide", protectedEsc_OnHide)
         end
     end
 end
-AFP("main", "hookMovable", hookMovable)
+AFP("hookMovable", hookMovable)
 
 local function hookMovableHeader(f, hf)
     if not f or not hf then
@@ -226,7 +238,7 @@ local function hookMovableHeader(f, hf)
     hf:HookScript("OnDragStop", function () f:StopMovingOrSizing() end)
     hf:RegisterForDrag("LeftButton")
 end
-AFP("main", "hookMovableHeader", hookMovableHeader)
+AFP("hookMovableHeader", hookMovableHeader)
 
 local function onAddonLoaded(self, addOnName)
     if addOnName == "DeModal" then
@@ -301,7 +313,7 @@ local function onAddonLoaded(self, addOnName)
 
     end
 end
-AFP("main", "onAddonLoaded", onAddonLoaded)
+AFP("onAddonLoaded", onAddonLoaded)
 
 -- handles addon loading
 local function onEvent(self, event, ...)
@@ -321,6 +333,6 @@ local function onEvent(self, event, ...)
         end
     end
 end
-AFP("main", "onEvent", onEvent)
+AFP("onEvent", onEvent)
 MF:SetScript("OnEvent", onEvent)
 MF:RegisterEvent("ADDON_LOADED")
