@@ -27,6 +27,8 @@
 # limitations under the License.
 
 core/debug.lua
+core/framedefs.lua
 core/slashcommands.lua
+core/DeModalMixin.lua
 
 DeModal.lua

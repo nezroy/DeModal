@@ -14,7 +14,7 @@ local function AddProfiling(name, func)
         return
     end
     local callLine, _ = strsplit("\n", debugstack(2, 1, 0), 2)
-    local unit = gsub(gsub(callLine, '%[string "@Interface\\AddOns\\GW2_UI\\', ""), '%.lua".*', "")
+    local unit = gsub(gsub(callLine, '%[string "@Interface\\AddOns\\DeModal\\', ""), '%.lua".*', "")
     unit = gsub(gsub(unit, '\\', "::"), '/', "::")
     local gName = "DeModal_" .. unit
     if not _G[gName] then
