@@ -50,6 +50,7 @@ PKG.addonFrames = {
     ["Blizzard_ScrappingMachineUI"] = {"ScrappingMachineFrame"},
     ["Blizzard_Soulbinds"] = {"SoulbindViewer"},
     ["Blizzard_TalentUI"] = {"PlayerTalentFrame"},
+    ["Blizzard_TorghastLevelPicker"] = {"TorghastLevelPickerFrame"},
     ["Blizzard_TradeSkillUI"] = {"TradeSkillFrame"},
     ["Blizzard_TrainerUI"] = {"ClassTrainerFrame"},
     ["Blizzard_VoidStorageUI"] = {"VoidStorageFrame"},
