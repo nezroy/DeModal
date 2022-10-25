@@ -11,11 +11,11 @@ DEMODAL_ADDON.VERSION = "@project-version@"
 PKG.gameVersion = "retail"
 local tocv = select(4, GetBuildInfo())
 if tocv < 20000 then
-    PKG.gameVersion = "classic"
+    PKG.gameVersion = "vanilla"
 elseif tocv < 30000 then
-    PKG.gameVersion = "bcc"
+    PKG.gameVersion = "tbc"
 elseif tocv < 40000 then
-    PKG.gameVersion = "wotlk"
+    PKG.gameVersion = "wrath"
 end
 Debug("TOC V", tocv, PKG.gameVersion)
 

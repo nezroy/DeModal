@@ -59,7 +59,11 @@ function DeModalMixin:FixQuirks(fName, f)
         -- but it should be minor and I can't think of an alternative way to do it
         local wtf = _G.WardrobeTransmogFrame
         if wtf then
-            wtf.ToggleSecondaryAppearanceCheckbox.Label:ClearPointByName("RIGHT")
+            if PKG.gameVersion == "retail" then
+                wtf.ToggleSecondaryAppearanceCheckbox.Label:ClearPoint("RIGHT")
+            else
+                wtf.ToggleSecondaryAppearanceCheckbox.Label:ClearPointByName("RIGHT")
+            end
             wtf.ToggleSecondaryAppearanceCheckbox.Label:SetWidth(110)
         end
     elseif fName == "CollectionsJournal" then
@@ -194,6 +198,7 @@ function DeModalMixin:Load()
     end
 
     self.loaded = true
+
     Debug("DeModal loaded")
 end
 
@@ -204,7 +209,11 @@ function DeModalMixin:LoadAddon(addonInfo, ignoreMissing)
             self:HookMovable(f, fName)
             if PKG.headerFrames[fName] then
                 -- dumb way to handle special frames that need extra work
-                self:HookMovableHeader(f, _G[ PKG.headerFrames[fName] ])
+                if (f.Header) then
+                    self:HookMovableHeader(f, f.Header)
+                else
+                    self:HookMovableHeader(f, _G[ PKG.headerFrames[fName] ])
+                end
             end
         elseif not ignoreMissing then
             Debug("missing frame that should not be missing:", fName)
