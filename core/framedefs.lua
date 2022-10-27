@@ -2,24 +2,24 @@ local _, PKG = ...
 
 -- simple frames that should always be pre-loaded
 PKG.frameXML = {
-    {["f"] = "CharacterFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "SpellBookFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "PVEFrame", ["retail"] = true, ["wrath"] = false, ["tbc"] = false, ["vanilla"] = false},
-    {["f"] = "DressUpFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "FriendsFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "BankFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "MailFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "GossipFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "QuestFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "MerchantFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "TabardFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "GuildRegistrarFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "ItemTextFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "PetStableFrame", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "LFGDungeonReadyDialog", ["retail"] = true, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "GuildInviteFrame", ["retail"] = true, ["wrath"] = false, ["tbc"] = false, ["vanilla"] = false},
-    {["f"] = "QuestLogFrame", ["retail"] = false, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true},
-    {["f"] = "TaxiFrame", ["retail"] = false, ["wrath"] = true, ["tbc"] = true, ["vanilla"] = true}
+    {["f"] = "CharacterFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "SpellBookFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "PVEFrame", ["retail"] = true, ["wrath"] = false, ["vanilla"] = false},
+    {["f"] = "DressUpFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "FriendsFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "BankFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "MailFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "GossipFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "QuestFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "MerchantFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "TabardFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "GuildRegistrarFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "ItemTextFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "PetStableFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "LFGDungeonReadyDialog", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "GuildInviteFrame", ["retail"] = true, ["wrath"] = false, ["vanilla"] = false},
+    {["f"] = "QuestLogFrame", ["retail"] = false, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "TaxiFrame", ["retail"] = false, ["wrath"] = true, ["vanilla"] = true}
 }
 
 -- frames loaded with specific blizzard addons
