@@ -48,6 +48,7 @@ PKG.addonFrames = {
     ["Blizzard_LookingForGroupUI"] = {"LFGParentFrame"}, -- tbc
     ["Blizzard_MacroUI"] = {"MacroFrame"},
     ["Blizzard_OrderHallUI"] = {"OrderHallTalentFrame"},
+    ["Blizzard_Professions"] = {"ProfessionsFrame"},
     ["Blizzard_RuneforgeUI"] = {"RuneforgeFrame"},
     ["Blizzard_ScrappingMachineUI"] = {"ScrappingMachineFrame"},
     ["Blizzard_Soulbinds"] = {"SoulbindViewer"},
