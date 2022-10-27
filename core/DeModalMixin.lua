@@ -11,6 +11,9 @@ function DeModalMixin:Init()
     -- flag tracking whether addon has finished initial loading
     self.loaded = false
 
+    -- normal frames that we always try to mass-close
+    self.uiClosableFrames = {}
+    
     -- protected frames that we only try to mass-close out of combat
     self.uiProtectedFrames = {}
 
@@ -119,8 +122,15 @@ function DeModalMixin:HookMovable(f, fName, wasArea)
         -- disable default panel positioning for this frame
         UIPW[fName]["area"] = nil
         if not f:IsProtected() then
-            -- add to list of special frames that get auto-closed with ESC
+            -- add to list of frames that get closed with ESC
+            Debug("frame added to closable frames:", fName)
+            -- add to this list so the generic window manager knows stuff was open
+            -- (and therefore doesn't show the ESC menu)
             tinsert(UISpecialFrames, fName)
+            -- add to this list so we can also "click" close buttons to cleanup in
+            -- our CloseWindows hook, as some frames need extra processing to close
+            -- properly (e.g. AnimaDiversionFrame) that is not otherwise run
+            tinsert(self.uiClosableFrames, f)
         else
             -- special handling required for ESC on protected frames
             Debug("frame is protected, need special ESC handler:", fName)
@@ -163,6 +173,13 @@ function DeModalMixin:HookMovableHeader(f, hf)
 end
 
 function DeModalMixin:CloseWindowsHook(ignoreCenter, frameToIgnore)
+    for i, f in ipairs(self.uiClosableFrames) do
+        local fName = f:GetName()
+        local fBtn = f.CloseButton or _G[fName .. "CloseButton"]
+        if fBtn and fBtn.Click then
+            fBtn:Click()
+        end
+    end
     if InCombatLockdown() then
         return
     end
