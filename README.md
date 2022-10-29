@@ -23,7 +23,10 @@ The goal is to let you move anything that *looks like* a movable UI window (e.g.
 
 ### SETTINGS
 
-There are no settings.
+Settings are found in the default AddOn options location: `ESC -> Options -> AddOns -> DeModal`.
+
+  - **Save windows only for this character**: check this to save window settings only for the current character. If unchecked (default) the current character will share saved window settings with all characters.
+  - **Reset All Saved Window Settings**: click to reset all saved window settings in the current character and shared profiles. Forces a UI reload.
 
 ### BLIZZMOVE
 
