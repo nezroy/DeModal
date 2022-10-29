@@ -19,10 +19,5 @@ Debug("TOC V", tocv, PKG.gameVersion)
 
 -- load all the things
 PKG.LoadSlashCommands()
-
--- main addon & event frame
-local MF = CreateFrame("Frame", nil, UIParent)
-Mixin(MF, PKG.DeModalMixin)
-MF:Init()
-MF:SetScript("OnEvent", MF.OnEvent)
-MF:RegisterEvent("ADDON_LOADED")
+PKG.SettingsMixin.Init()
+PKG.DeModalMixin.Init()

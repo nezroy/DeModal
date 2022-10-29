@@ -7,13 +7,13 @@ local DeModalMixin = {}
 AFP("DeModalMixin", DeModalMixin)
 PKG.DeModalMixin = DeModalMixin
 
-function DeModalMixin:Init()
+function DeModalMixin:SetInternals()
     -- flag tracking whether addon has finished initial loading
     self.loaded = false
 
     -- normal frames that we always try to mass-close
     self.uiClosableFrames = {}
-    
+
     -- protected frames that we only try to mass-close out of combat
     self.uiProtectedFrames = {}
 
@@ -82,6 +82,32 @@ function DeModalMixin:FixQuirks(fName, f)
     end
 end
 
+local function hook_onDragStop(self)
+    local fName = self:GetName()
+    Debug("update saved frame position:", fName)
+
+    -- don't use WTF layout cache
+    self:SetUserPlaced(false)
+
+    -- update stored frame position in char or global table
+    local frameDb = DEMODAL_DB["frames"]
+    if DEMODAL_CHAR_DB["per_char_positions"] then
+        frameDb = DEMODAL_CHAR_DB["frames"]
+    end
+    if frameDb[fName] then
+        table.wipe(frameDb[fName])
+    else
+        frameDb[fName] = {}
+    end
+    for i = 1, self:GetNumPoints() do
+        local pt, relTo, relPt, xOfs, yOfs = self:GetPoint(i)
+        local relName = (relTo and relTo:GetName()) or "UIParent"
+        Debug("point:", pt, relName, relPt, xOfs, yOfs)
+        frameDb[fName][i] = {pt, relName, relPt, xOfs, yOfs}
+    end
+end
+AFP("hook_onDragStop", hook_onDragStop)
+
 function DeModalMixin:HookMovable(f, fName, wasArea)
     local UIPW = _G.UIPanelWindows
     if f:IsProtected() and InCombatLockdown() then
@@ -107,6 +133,7 @@ function DeModalMixin:HookMovable(f, fName, wasArea)
     f:EnableMouse(true)
     f:HookScript("OnDragStart", f.StartMoving)
     f:HookScript("OnDragStop", f.StopMovingOrSizing)
+    f:HookScript("OnDragStop", hook_onDragStop)
     if f:IsProtected() then
         f:HookScript("OnShow", protectedRaise_OnShow)
     else
@@ -159,6 +186,23 @@ function DeModalMixin:HookMovable(f, fName, wasArea)
             lp:SetAttribute("_onhide", protectedEsc_OnHide)
         end
     end
+
+    -- restore saved frame position
+    local frameDb = DEMODAL_DB["frames"]
+    if DEMODAL_CHAR_DB["per_char_positions"] then
+        frameDb = DEMODAL_CHAR_DB["frames"]
+    end
+    if frameDb[fName] and #(frameDb[fName]) > 0 then
+        Debug("restore frame position:", fName)
+        f:ClearAllPoints()
+        local pts = frameDb[fName]
+        for i = 1, #(pts) do
+            local relF = _G[pts[i][2]] or UIParent
+            Debug("point:", pts[i][1], pts[i][2], pts[i][3], pts[i][4], pts[i][5])
+            f:SetPoint(pts[i][1], relF, pts[i][3], pts[i][4], pts[i][5])
+        end
+    end
+
 end
 
 function DeModalMixin:HookMovableHeader(f, hf)
@@ -169,6 +213,7 @@ function DeModalMixin:HookMovableHeader(f, hf)
     hf:EnableMouse(true)
     hf:HookScript("OnDragStart", function () f:StartMoving() end)
     hf:HookScript("OnDragStop", function () f:StopMovingOrSizing() end)
+    hf:HookScript("OnDragStop", function () hook_onDragStop(f) end)
     hf:RegisterForDrag("LeftButton")
 end
 
@@ -191,7 +236,26 @@ function DeModalMixin:CloseWindowsHook(ignoreCenter, frameToIgnore)
     end
 end
 
-function DeModalMixin:Load()
+function DeModalMixin:LoadSelf()
+    -- check/init settings
+    if not DEMODAL_CHAR_DB then
+        Debug("init char settings DB")
+        DEMODAL_CHAR_DB = {
+            ["setting_ver"] = 1,
+            ["frames"] = {}
+        }
+    end
+    if not DEMODAL_DB then
+        Debug("init global settings DB")
+        DEMODAL_DB = {
+            ["setting_ver"] = 1,
+            ["frames"] = {}
+        }
+    end
+
+    -- finish setting up options panel now that variables are loaded
+    PKG.SettingsMixin.Init():SetOptionValues()
+
     -- hook CloseWindows for special handling of protected frames
     hooksecurefunc("CloseWindows", function() self:CloseWindowsHook() end)
 
@@ -244,14 +308,13 @@ function DeModalMixin:AddonLoadedEvent(addOnName)
         if self.loaded then
             return
         end
-        self:Load()
+        self:LoadSelf()
     elseif PKG.addonFrames[addOnName] then
         if not self.loaded then
             return
         end
         Debug("addon load event for:", addOnName)
         self:LoadAddon(PKG.addonFrames[addOnName])
-        --PKG.addonFrames[addOnName] = nil
     end
 end
 
@@ -276,4 +339,17 @@ function DeModalMixin:OnEvent(event, ...)
     elseif event == "PLAYER_REGEN_ENABLED" then
         self:PlayerRegenEnabledEvent()
     end
+end
+
+local SF = nil
+DeModalMixin.Init = function()
+    if SF then
+        return SF
+    end
+    SF = CreateFrame("Frame", nil, UIParent)
+    Mixin(SF, DeModalMixin)
+    SF:SetInternals()
+    SF:SetScript("OnEvent", SF.OnEvent)
+    SF:RegisterEvent("ADDON_LOADED")
+    return SF
 end
