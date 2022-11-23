@@ -1,4 +1,4 @@
-## Interface: 100000
+## Interface: 100002
 ## Title: DeModal
 ## Notes: Make most default Blizz UI panels movable.
 ## OptionalDeps: _DebugLog, BugSack, !Stragglers, ACU
