@@ -203,6 +203,21 @@ function DeModalMixin:HookMovable(f, fName, wasArea)
         end
     end
 
+    -- set default frame scale based on the original UI window manager stuff (UpdateScale et al)
+    local fitWidth = 20
+    local fitHeight = 20
+    if not f:GetAttribute("UIPanelLayout-defined") then
+	    local def_attrs = UIPanelWindows[f:GetName()];
+	    if def_attrs then
+            fitWidth = def_attrs["checkFitExtraWidth"] or fitWidth
+            fitHeight = def_attrs["checkFitExtraHeight"] or fitHeight
+	    end
+    else
+        fitWidth = f:GetAttribute("UIPanelLayout-checkFitExtraWidth") or fitWidth
+        fitHeight = f:GetAttribute("UIPanelLayout-checkFitExtraHeight") or fitHeight
+    end
+    UpdateScaleForFit(f, fitWidth, fitHeight);
+    Debug("fit to scale:", fitWidth, fitHeight, f:GetScale())
 end
 
 function DeModalMixin:HookMovableHeader(f, hf)
