@@ -82,9 +82,45 @@ function DeModalMixin:FixQuirks(fName, f)
     end
 end
 
+local function isMergedFrame(fName)
+    if not DEMODAL_DB["merge_frames"] then
+        return false
+    end
+    if fName == "GossipFrame"
+      or fName == "MerchantFrame"
+      or fName == "QuestFrame"
+      or fName == "ClassTrainerFrame"
+      then
+        return true
+    end
+    return false
+end
+AFP("hook_onDragStop", hook_onDragStop)
+
+local function restore_position(f, fName, frameDb)
+    if not frameDb[fName] or #(frameDb[fName]) == 0 then
+        return
+    end
+    Debug("restore frame position:", fName)
+    f:ClearAllPoints()
+    local pts = frameDb[fName]
+    for i = 1, #(pts) do
+        local relF = _G[pts[i][2]] or UIParent
+        Debug("point:", pts[i][1], pts[i][2], pts[i][3], pts[i][4], pts[i][5])
+        f:SetPoint(pts[i][1], relF, pts[i][3], pts[i][4], pts[i][5])
+    end
+end
+AFP("restore_position", restore_position)
+
 local function hook_onDragStop(self)
     local fName = self:GetName()
+    local fName_to_save = fName
     Debug("update saved frame position:", fName)
+
+    -- special-handling for merged frames
+    if isMergedFrame(fName) then
+        fName_to_save = "GossipFrame"
+    end
 
     -- don't use WTF layout cache
     self:SetUserPlaced(false)
@@ -94,19 +130,52 @@ local function hook_onDragStop(self)
     if DEMODAL_CHAR_DB["per_char_positions"] then
         frameDb = DEMODAL_CHAR_DB["frames"]
     end
-    if frameDb[fName] then
-        table.wipe(frameDb[fName])
+    if frameDb[fName_to_save] then
+        table.wipe(frameDb[fName_to_save])
     else
-        frameDb[fName] = {}
+        frameDb[fName_to_save] = {}
     end
     for i = 1, self:GetNumPoints() do
         local pt, relTo, relPt, xOfs, yOfs = self:GetPoint(i)
         local relName = (relTo and relTo:GetName()) or "UIParent"
         Debug("point:", pt, relName, relPt, xOfs, yOfs)
-        frameDb[fName][i] = {pt, relName, relPt, xOfs, yOfs}
+        frameDb[fName_to_save][i] = {pt, relName, relPt, xOfs, yOfs}
+    end
+
+    -- re-position other merged frames too
+    if isMergedFrame(fName) then
+        if fName ~= "GossipFrame" and GossipFrame then
+            restore_position(GossipFrame, fName_to_save, frameDb)
+        end
+        if fName ~= "QuestFrame" and QuestFrame then
+            restore_position(QuestFrame, fName_to_save, frameDb)
+        end
+        if fName ~= "MerchantFrame" and MerchantFrame then
+            restore_position(MerchantFrame, fName_to_save, frameDb)
+        end
+        if fName ~= "ClassTrainerFrame" and ClassTrainerFrame then
+            restore_position(ClassTrainerFrame, fName_to_save, frameDb)
+        end
     end
 end
 AFP("hook_onDragStop", hook_onDragStop)
+
+local function hook_merged_onShow(self)
+    local fName = self:GetName()
+    if fName ~= "GossipFrame" and GossipFrame:IsShown() then
+        GossipFrameCloseButton:Click()
+    end
+    if fName ~= "QuestFrame" and QuestFrame:IsShown() then
+        QuestFrameCloseButton:Click()
+    end
+    if fName ~= "MerchantFrame" and MerchantFrame:IsShown() then
+        MerchantFrameCloseButton:Click()
+    end
+    if fName ~= "ClassTrainerFrame" and ClassTrainerFrame and ClassTrainerFrame:IsShown() then
+        ClassTrainerFrameCloseButton:Click()
+    end
+end
+AFP("hook_merged_onShow", hook_merged_onShow)
 
 function DeModalMixin:HookMovable(f, fName, wasArea)
     local UIPW = _G.UIPanelWindows
@@ -192,16 +261,12 @@ function DeModalMixin:HookMovable(f, fName, wasArea)
     if DEMODAL_CHAR_DB["per_char_positions"] then
         frameDb = DEMODAL_CHAR_DB["frames"]
     end
-    if frameDb[fName] and #(frameDb[fName]) > 0 then
-        Debug("restore frame position:", fName)
-        f:ClearAllPoints()
-        local pts = frameDb[fName]
-        for i = 1, #(pts) do
-            local relF = _G[pts[i][2]] or UIParent
-            Debug("point:", pts[i][1], pts[i][2], pts[i][3], pts[i][4], pts[i][5])
-            f:SetPoint(pts[i][1], relF, pts[i][3], pts[i][4], pts[i][5])
-        end
+    local fName_to_restore = fName
+    if isMergedFrame(fName) then
+        fName_to_restore = "GossipFrame"
+        f:HookScript("OnShow", hook_merged_onShow)
     end
+    restore_position(f, fName_to_restore, frameDb)
 
     -- set default frame scale based on the original UI window manager stuff (UpdateScale et al)
     local fitWidth = 20

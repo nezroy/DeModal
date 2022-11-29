@@ -24,10 +24,10 @@ local function resetFrames_onClick(btn)
     table.wipe(DEMODAL_DB["frames"])
     ReloadUI()
 end
-AFP("resetFrames_onClickk", resetFrames_onClick)
+AFP("resetFrames_onClick", resetFrames_onClick)
 
 function SettingsMixin:AddOptions()
-    -- manually creating options until Blizzards vertical frame taint bugs are sorted
+    -- manually creating options until Blizzard's vertical frame taint bugs are sorted
     local f = self.ScrollBox.ScrollTarget
 
     local btn = CreateFrame("Frame", nil, f, "SettingsCheckBoxControlTemplate")
@@ -35,13 +35,20 @@ function SettingsMixin:AddOptions()
     btn:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -10)
     btn.Text:SetText("Save windows only for this character")
     btn.CheckBox:ClearAllPoints()
-    btn.CheckBox:SetPoint("TOPRIGHT")
+    btn.CheckBox:SetPoint("TOPLEFT", btn, "TOPRIGHT")
 
     local btnReset = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
     btnReset:SetText("Reset All Saved Window Settings")
     btnReset:SetWidth(300)
     btnReset:SetPoint("TOPLEFT", btn, "BOTTOMLEFT", 0, -10)
     btnReset:HookScript("OnClick", resetFrames_onClick)
+
+    local btnMerge = CreateFrame("Frame", nil, f, "SettingsCheckBoxControlTemplate")
+    f.MergeFramesOption = btnMerge
+    btnMerge:SetPoint("TOPLEFT", btnReset, "BOTTOMLEFT", 0, -10)
+    btnMerge.Text:SetText("Merge quest, gossip, and merchant frames")
+    btnMerge.CheckBox:ClearAllPoints()
+    btnMerge.CheckBox:SetPoint("TOPLEFT", btnMerge, "TOPRIGHT")
 end
 
 local function perCharPos_onClick(btn)
@@ -49,7 +56,29 @@ local function perCharPos_onClick(btn)
 end
 AFP("perCharPos_onClick", perCharPos_onClick)
 
+local function mergeFrames_onClick(btn)
+    DEMODAL_DB["merge_frames"] = btn:GetChecked()
+end
+AFP("mergeFrames_onClick", mergeFrames_onClick)
+
+local function setOptionDefaults()
+    -- TODO: put this in a shared place
+
+    -- set char option defaults
+    if DEMODAL_CHAR_DB["per_char_positions"] == nil then
+        DEMODAL_CHAR_DB["per_char_positions"] = false
+    end
+
+    -- set global option defaults
+    if DEMODAL_DB["merge_frames"] == nil then
+        DEMODAL_DB["merge_frames"] = true
+    end
+end
+AFP("setOptionDefaults", setOptionDefaults)
+
 function SettingsMixin:SetOptionValues()
+    setOptionDefaults()
+    
     local f = self.ScrollBox.ScrollTarget
 
     f.PerCharOption.CheckBox:HookScript("OnClick", perCharPos_onClick)
@@ -57,6 +86,13 @@ function SettingsMixin:SetOptionValues()
         f.PerCharOption.CheckBox:SetChecked(true)
     else
         f.PerCharOption.CheckBox:SetChecked(false)
+    end
+
+    f.MergeFramesOption.CheckBox:HookScript("OnClick", mergeFrames_onClick)
+    if DEMODAL_DB["merge_frames"] then
+        f.MergeFramesOption.CheckBox:SetChecked(true)
+    else
+        f.MergeFramesOption.CheckBox:SetChecked(false)
     end
 end
 

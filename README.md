@@ -31,6 +31,7 @@ Settings are found in the default AddOn options location: `ESC → Options → A
 
   - **Save windows only for this character**: check this to save window settings only for the current character. If unchecked (default) the current character will share saved window settings with all characters.
   - **Reset All Saved Window Settings**: click to reset all saved window settings in the current character and shared profiles. Forces a UI reload.
+  - **Merge quest, gossip, and merchant frames**: check this (default) to prevent certain frames being open at the same time, as well as to use a common position for them. This fixes some bugs caused by the Blizz UI not expecting some windows to ever be open together. For example, a gossip frame offering multiple quests doesn't always update correctly after accepting or completing a quest. Left this as an option for those who, because of other addons or whatever reason, want to keep the legacy behavior of having these completely separate, even with the possible bugginess.
 
 ⸻
 

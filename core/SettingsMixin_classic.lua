@@ -40,15 +40,40 @@ function SettingsMixin:AddOptions()
     btnReset:SetWidth(300)
     btnReset:SetPoint("TOPLEFT", btn, "BOTTOMLEFT", 0, -10)
     btnReset:HookScript("OnClick", resetFrames_onClick)
+
+    local btnMerge = CreateFrame("CheckButton", nil, self, "InterfaceOptionsCheckButtonTemplate")
+    self.MergeFramesOption = btnMerge
+    btnMerge:SetPoint("TOPLEFT", btnReset, "BOTTOMLEFT", 0, -10)
+    btnMerge.label = btnMerge:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    btnMerge.label:SetPoint("TOPLEFT", 30, -6)
+    btnMerge.label:SetText("Merge quest, gossip, and merchant frames")
 end
 
+local function setOptionDefaults()
+    -- TODO: put this in a shared place
+
+    -- set char option defaults
+    if DEMODAL_CHAR_DB["per_char_positions"] == nil then
+        DEMODAL_CHAR_DB["per_char_positions"] = false
+    end
+
+    -- set global option defaults
+    if DEMODAL_DB["merge_frames"] == nil then
+        DEMODAL_DB["merge_frames"] = true
+    end
+end
+AFP("setOptionDefaults", setOptionDefaults)
+
 function SettingsMixin:SetOptionValues()
-    -- no-op, handled in OnShow
+    setOptionDefaults()
 end
 
 function SettingsMixin:okay()
     Debug("update setting PerCharOption:", self.PerCharOption:GetChecked())
     DEMODAL_CHAR_DB["per_char_positions"] = self.PerCharOption:GetChecked()
+
+    Debug("update setting MergeFrames:", self.MergeFramesOption:GetChecked())
+    DEMODAL_DB["merge_frames"] = self.MergeFramesOption:GetChecked()
 end
 
 function SettingsMixin:OnShow()
@@ -56,6 +81,12 @@ function SettingsMixin:OnShow()
         self.PerCharOption:SetChecked(true)
     else
         self.PerCharOption:SetChecked(false)
+    end
+
+    if DEMODAL_DB["merge_frames"] then
+        self.MergeFramesOption:SetChecked(true)
+    else
+        self.MergeFramesOption:SetChecked(false)
     end
 end
 
