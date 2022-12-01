@@ -54,6 +54,13 @@ local function hook_closeOnClick(self, button, down)
 end
 AFP("hook_closeOnClick", hook_closeOnClick)
 
+local function hook_closeGossip_onShow(self)
+    if GossipFrame and GossipFrame:IsShown() then
+        GossipFrameCloseButton:Click()
+    end
+end
+AFP("hook_closeGossip_onShow", hook_closeGossip_onShow)
+
 -- fix various quirks unique to specific frames
 function DeModalMixin:FixQuirks(fName, f)
     if fName == "WardrobeFrame" then
@@ -79,6 +86,8 @@ function DeModalMixin:FixQuirks(fName, f)
         if ejt then
             ejt:ClearAllPoints()
         end
+    elseif fName == "OrderHallTalentFrame" or fName == "MajorFactionRenownFrame" then
+        f:HookScript("OnShow", hook_closeGossip_onShow)
     end
 end
 
