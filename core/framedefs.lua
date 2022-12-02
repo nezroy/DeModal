@@ -62,6 +62,7 @@ PKG.addonFrames = {
     ["Blizzard_OrderHallUI"] = {"OrderHallTalentFrame"},
     -- ["Blizzard_PlayerChoice"] = {"PlayerChoiceFrame"}, -- does not behave on re-open after move
     ["Blizzard_Professions"] = {"ProfessionsFrame"},
+    ["Blizzard_ProfessionsCustomerOrders"] = {"ProfessionsCustomerOrdersFrame"},
     ["Blizzard_RuneforgeUI"] = {"RuneforgeFrame"},
     ["Blizzard_ScrappingMachineUI"] = {"ScrappingMachineFrame"},
     ["Blizzard_Soulbinds"] = {"SoulbindViewer"},
