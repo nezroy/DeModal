@@ -8,8 +8,11 @@ AFP("DeModalMixin", DeModalMixin)
 PKG.DeModalMixin = DeModalMixin
 
 function DeModalMixin:SetInternals()
-    -- flag tracking whether addon has finished initial loading
+    -- flag tracking whether addon has finished addon loading
     self.loaded = false
+
+    -- flag tracking whether addon has finished initial load/login event
+    self.entered = false
 
     -- normal frames that we always try to mass-close
     self.uiClosableFrames = {}
@@ -19,6 +22,12 @@ function DeModalMixin:SetInternals()
 
     -- protected frames that need deferred hook because they were initially loaded in combat
     self.fixProtectedFrames = {}
+
+    -- frames that will need initial positioning
+    self.positionFrames = {}
+
+    -- track certain frame hooks to make sure they are not nested/repeated
+    self.hookedMergeFrames = {}
 end
 
 local function protectedRaise_OnShow(self)
@@ -104,13 +113,29 @@ local function isMergedFrame(fName)
     end
     return false
 end
-AFP("hook_onDragStop", hook_onDragStop)
+AFP("isMergedFrame", isMergedFrame)
+
+local function hook_merged_onShow(self)
+    local fName = self:GetName()
+    if fName ~= "GossipFrame" and GossipFrame:IsShown() then
+        GossipFrameCloseButton:Click()
+    end
+    if fName ~= "QuestFrame" and QuestFrame:IsShown() then
+        QuestFrameCloseButton:Click()
+    end
+    if fName ~= "MerchantFrame" and MerchantFrame:IsShown() then
+        MerchantFrameCloseButton:Click()
+    end
+    if fName ~= "ClassTrainerFrame" and ClassTrainerFrame and ClassTrainerFrame:IsShown() then
+        ClassTrainerFrameCloseButton:Click()
+    end
+end
+AFP("hook_merged_onShow", hook_merged_onShow)
 
 local function restore_position(f, fName, frameDb)
     if not frameDb[fName] or #(frameDb[fName]) == 0 then
         return
     end
-    Debug("restore frame position:", fName)
     f:ClearAllPoints()
     local pts = frameDb[fName]
     for i = 1, #(pts) do
@@ -120,6 +145,40 @@ local function restore_position(f, fName, frameDb)
     end
 end
 AFP("restore_position", restore_position)
+
+function DeModalMixin:PositionFrame(f, fName)
+    Debug("position frame:", fName)
+    -- set default frame scale based on the original UI window manager stuff (UpdateScale et al)
+    local fitWidth = 20
+    local fitHeight = 20
+    if not f:GetAttribute("UIPanelLayout-defined") then
+	    local def_attrs = UIPanelWindows[f:GetName()];
+	    if def_attrs then
+            fitWidth = def_attrs["checkFitExtraWidth"] or fitWidth
+            fitHeight = def_attrs["checkFitExtraHeight"] or fitHeight
+	    end
+    else
+        fitWidth = f:GetAttribute("UIPanelLayout-checkFitExtraWidth") or fitWidth
+        fitHeight = f:GetAttribute("UIPanelLayout-checkFitExtraHeight") or fitHeight
+    end
+    UpdateScaleForFit(f, fitWidth, fitHeight);
+    Debug("fit to scale:", fitWidth, fitHeight, f:GetScale())
+
+    -- restore saved frame position
+    local frameDb = DEMODAL_DB["frames"]
+    if DEMODAL_CHAR_DB["per_char_positions"] then
+        frameDb = DEMODAL_CHAR_DB["frames"]
+    end
+    local fName_to_restore = fName
+    -- check if we've already hooked this; if not, add the hook
+    -- I don't think I ever re-call frame positioning currently, but it should be safe to do so
+    if isMergedFrame(fName) and not self.hookedMergeFrames[fName] then
+        fName_to_restore = "GossipFrame"
+        f:HookScript("OnShow", hook_merged_onShow)
+        self.hookedMergeFrames[fName] = true
+    end
+    restore_position(f, fName_to_restore, frameDb)
+end
 
 local function hook_onDragStop(self)
     local fName = self:GetName()
@@ -168,23 +227,6 @@ local function hook_onDragStop(self)
     end
 end
 AFP("hook_onDragStop", hook_onDragStop)
-
-local function hook_merged_onShow(self)
-    local fName = self:GetName()
-    if fName ~= "GossipFrame" and GossipFrame:IsShown() then
-        GossipFrameCloseButton:Click()
-    end
-    if fName ~= "QuestFrame" and QuestFrame:IsShown() then
-        QuestFrameCloseButton:Click()
-    end
-    if fName ~= "MerchantFrame" and MerchantFrame:IsShown() then
-        MerchantFrameCloseButton:Click()
-    end
-    if fName ~= "ClassTrainerFrame" and ClassTrainerFrame and ClassTrainerFrame:IsShown() then
-        ClassTrainerFrameCloseButton:Click()
-    end
-end
-AFP("hook_merged_onShow", hook_merged_onShow)
 
 function DeModalMixin:HookMovable(f, fName, wasArea)
     local UIPW = _G.UIPanelWindows
@@ -265,33 +307,12 @@ function DeModalMixin:HookMovable(f, fName, wasArea)
         end
     end
 
-    -- restore saved frame position
-    local frameDb = DEMODAL_DB["frames"]
-    if DEMODAL_CHAR_DB["per_char_positions"] then
-        frameDb = DEMODAL_CHAR_DB["frames"]
-    end
-    local fName_to_restore = fName
-    if isMergedFrame(fName) then
-        fName_to_restore = "GossipFrame"
-        f:HookScript("OnShow", hook_merged_onShow)
-    end
-    restore_position(f, fName_to_restore, frameDb)
-
-    -- set default frame scale based on the original UI window manager stuff (UpdateScale et al)
-    local fitWidth = 20
-    local fitHeight = 20
-    if not f:GetAttribute("UIPanelLayout-defined") then
-	    local def_attrs = UIPanelWindows[f:GetName()];
-	    if def_attrs then
-            fitWidth = def_attrs["checkFitExtraWidth"] or fitWidth
-            fitHeight = def_attrs["checkFitExtraHeight"] or fitHeight
-	    end
+    if self.entered then
+        self:PositionFrame(f, fName)
     else
-        fitWidth = f:GetAttribute("UIPanelLayout-checkFitExtraWidth") or fitWidth
-        fitHeight = f:GetAttribute("UIPanelLayout-checkFitExtraHeight") or fitHeight
+        -- put the frame into the list of frames that still need scale/position applied
+        tinsert(self.positionFrames, {f, fName})
     end
-    UpdateScaleForFit(f, fitWidth, fitHeight);
-    Debug("fit to scale:", fitWidth, fitHeight, f:GetScale())
 end
 
 function DeModalMixin:HookMovableHeader(f, hf)
@@ -422,11 +443,29 @@ function DeModalMixin:PlayerRegenEnabledEvent()
     end
 end
 
+function DeModalMixin:PlayerEnteringWorldEvent(isLogin, isReload)
+    if (not isLogin and not isReload) then
+        return
+    end
+    Debug("PLAYER_ENTERING_WORLD event")
+    if #self.positionFrames > 0 then
+        for i, moveMe in ipairs(self.positionFrames) do
+            local f = moveMe[1]
+            local fName = moveMe[2]
+            self:PositionFrame(f, fName)
+        end
+        wipe(self.positionFrames)
+    end
+    self.entered = true
+end
+
 function DeModalMixin:OnEvent(event, ...)
     if event == "ADDON_LOADED" then
         self:AddonLoadedEvent(...)
     elseif event == "PLAYER_REGEN_ENABLED" then
         self:PlayerRegenEnabledEvent()
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        self:PlayerEnteringWorldEvent(...)
     end
 end
 
@@ -440,5 +479,6 @@ DeModalMixin.Init = function()
     SF:SetInternals()
     SF:SetScript("OnEvent", SF.OnEvent)
     SF:RegisterEvent("ADDON_LOADED")
+    SF:RegisterEvent("PLAYER_ENTERING_WORLD")
     return SF
 end
