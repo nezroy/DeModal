@@ -161,7 +161,7 @@ function DeModalMixin:PositionFrame(f, fName)
         fitWidth = f:GetAttribute("UIPanelLayout-checkFitExtraWidth") or fitWidth
         fitHeight = f:GetAttribute("UIPanelLayout-checkFitExtraHeight") or fitHeight
     end
-    UpdateScaleForFit(f, fitWidth, fitHeight);
+    UIPanelUpdateScaleForFit(f, fitWidth, fitHeight);
     Debug("fit to scale:", fitWidth, fitHeight, f:GetScale())
 
     -- restore saved frame position

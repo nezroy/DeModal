@@ -3,7 +3,7 @@ local _, PKG = ...
 -- simple frames that should always be pre-loaded
 PKG.frameXML = {
     {["f"] = "CharacterFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
-    {["f"] = "SpellBookFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "SpellBookFrame", ["retail"] = false, ["wrath"] = true, ["vanilla"] = true},
     {["f"] = "PVEFrame", ["retail"] = true, ["wrath"] = false, ["vanilla"] = false},
     {["f"] = "DressUpFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
     {["f"] = "FriendsFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
@@ -15,7 +15,7 @@ PKG.frameXML = {
     {["f"] = "TabardFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
     {["f"] = "GuildRegistrarFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
     {["f"] = "ItemTextFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
-    {["f"] = "PetStableFrame", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "PetStableFrame", ["retail"] = false, ["wrath"] = true, ["vanilla"] = true},
     {["f"] = "LFGDungeonReadyDialog", ["retail"] = true, ["wrath"] = true, ["vanilla"] = true},
     {["f"] = "GuildInviteFrame", ["retail"] = true, ["wrath"] = false, ["vanilla"] = false},
     {["f"] = "QuestLogFrame", ["retail"] = false, ["wrath"] = true, ["vanilla"] = true},
@@ -42,7 +42,7 @@ PKG.addonFrames = {
     -- ["Blizzard_CovenantPreviewUI"] = {"CovenantPreviewFrame"}, -- no bueno
     ["Blizzard_CovenantRenown"] = {"CovenantRenownFrame"},
     ["Blizzard_CovenantSanctum"] = {"CovenantSanctumFrame"},
-    ["Blizzard_Communities"] = {"CommunitiesGuildLogFrame", "CommunitiesGuildTextEditFrame", "CommunitiesGuildNewsFiltersFrame"}, -- "CommunitiesFrame"
+    ["Blizzard_Communities"] = {"CommunitiesFrame", "CommunitiesGuildLogFrame", "CommunitiesGuildTextEditFrame", "CommunitiesGuildNewsFiltersFrame"},
     ["Blizzard_EncounterJournal"] = {"EncounterJournal"},
     ["Blizzard_ExpansionLandingPage"] = {"ExpansionLandingPage"},
     ["Blizzard_FlightMap"] = {"FlightMapFrame"},
@@ -60,12 +60,15 @@ PKG.addonFrames = {
     ["Blizzard_MajorFactions"] = {"MajorFactionRenownFrame"},
     ["Blizzard_NewPlayerExperienceGuide"] = {"GuideFrame"},
     ["Blizzard_OrderHallUI"] = {"OrderHallTalentFrame"},
+    ["Blizzard_PlayerSpells"] = {"PlayerSpellsFrame"},
     -- ["Blizzard_PlayerChoice"] = {"PlayerChoiceFrame"}, -- does not behave on re-open after move
     ["Blizzard_Professions"] = {"ProfessionsFrame"},
+    ["Blizzard_ProfessionsBook"] = {"ProfessionsBookFrame"},
     ["Blizzard_ProfessionsCustomerOrders"] = {"ProfessionsCustomerOrdersFrame"},
     ["Blizzard_RuneforgeUI"] = {"RuneforgeFrame"},
     ["Blizzard_ScrappingMachineUI"] = {"ScrappingMachineFrame"},
     ["Blizzard_Soulbinds"] = {"SoulbindViewer"},
+    ["Blizzard_StableUI"] = {"StableFrame"},
     ["Blizzard_TalentUI"] = {"PlayerTalentFrame"},
     ["Blizzard_TorghastLevelPicker"] = {"TorghastLevelPickerFrame"},
     ["Blizzard_TradeSkillUI"] = {"TradeSkillFrame"},

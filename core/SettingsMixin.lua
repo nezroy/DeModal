@@ -34,8 +34,8 @@ function SettingsMixin:AddOptions()
     f.PerCharOption = btn
     btn:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -10)
     btn.Text:SetText("Save windows only for this character")
-    btn.CheckBox:ClearAllPoints()
-    btn.CheckBox:SetPoint("TOPLEFT", btn, "TOPRIGHT")
+    btn.Checkbox:ClearAllPoints()
+    btn.Checkbox:SetPoint("TOPLEFT", btn, "TOPRIGHT")
 
     local btnReset = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
     btnReset:SetText("Reset All Saved Window Settings")
@@ -47,8 +47,8 @@ function SettingsMixin:AddOptions()
     f.MergeFramesOption = btnMerge
     btnMerge:SetPoint("TOPLEFT", btnReset, "BOTTOMLEFT", 0, -10)
     btnMerge.Text:SetText("Merge quest, gossip, and merchant frames")
-    btnMerge.CheckBox:ClearAllPoints()
-    btnMerge.CheckBox:SetPoint("TOPLEFT", btnMerge, "TOPRIGHT")
+    btnMerge.Checkbox:ClearAllPoints()
+    btnMerge.Checkbox:SetPoint("TOPLEFT", btnMerge, "TOPRIGHT")
 end
 
 local function perCharPos_onClick(btn)
@@ -81,18 +81,18 @@ function SettingsMixin:SetOptionValues()
     
     local f = self.ScrollBox.ScrollTarget
 
-    f.PerCharOption.CheckBox:HookScript("OnClick", perCharPos_onClick)
+    f.PerCharOption.Checkbox:HookScript("OnClick", perCharPos_onClick)
     if DEMODAL_CHAR_DB["per_char_positions"] then
-        f.PerCharOption.CheckBox:SetChecked(true)
+        f.PerCharOption.Checkbox:SetChecked(true)
     else
-        f.PerCharOption.CheckBox:SetChecked(false)
+        f.PerCharOption.Checkbox:SetChecked(false)
     end
 
-    f.MergeFramesOption.CheckBox:HookScript("OnClick", mergeFrames_onClick)
+    f.MergeFramesOption.Checkbox:HookScript("OnClick", mergeFrames_onClick)
     if DEMODAL_DB["merge_frames"] then
-        f.MergeFramesOption.CheckBox:SetChecked(true)
+        f.MergeFramesOption.Checkbox:SetChecked(true)
     else
-        f.MergeFramesOption.CheckBox:SetChecked(false)
+        f.MergeFramesOption.Checkbox:SetChecked(false)
     end
 end
 
