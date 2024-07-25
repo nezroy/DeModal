@@ -78,7 +78,7 @@ function DeModalMixin:FixQuirks(fName, f)
         -- but it should be minor and I can't think of an alternative way to do it
         local wtf = _G.WardrobeTransmogFrame
         if wtf then
-            if PKG.gameVersion == "retail" then
+            if PKG.gameVersion == "mainline" or PKG.gameVersion == "cata" then
                 wtf.ToggleSecondaryAppearanceCheckbox.Label:ClearPoint("RIGHT")
             else
                 wtf.ToggleSecondaryAppearanceCheckbox.Label:ClearPointByName("RIGHT")
@@ -161,7 +161,11 @@ function DeModalMixin:PositionFrame(f, fName)
         fitWidth = f:GetAttribute("UIPanelLayout-checkFitExtraWidth") or fitWidth
         fitHeight = f:GetAttribute("UIPanelLayout-checkFitExtraHeight") or fitHeight
     end
-    UIPanelUpdateScaleForFit(f, fitWidth, fitHeight);
+    if PKG.gameVersion == "mainline" then
+        UIPanelUpdateScaleForFit(f, fitWidth, fitHeight);
+    else
+        UpdateScaleForFit(f, fitWidth, fitHeight);
+    end
     Debug("fit to scale:", fitWidth, fitHeight, f:GetScale())
 
     -- restore saved frame position
