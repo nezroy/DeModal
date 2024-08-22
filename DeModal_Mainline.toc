@@ -1,4 +1,4 @@
-## Interface: 110000
+## Interface: 110002
 ## Title: DeModal
 ## Notes: Make most default Blizz UI panels movable.
 ## IconTexture: Interface/Addons/DeModal/Art/demodal_sm

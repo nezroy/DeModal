@@ -1,4 +1,4 @@
-## Interface: 40400, 30403, 11503
+## Interface: 11503, 30403, 40400
 ## Title: DeModal
 ## Notes: Make most default Blizz UI panels movable.
 ## OptionalDeps: _DebugLog, BugSack
