@@ -12,7 +12,7 @@ The WoW API contains all of the underlying code needed to handle user-based wind
   
   - Character, Spellbook, Spec and Talents
   - Merchants, Auction House
-  - Bank Vault, Guild Bank, Void Storage
+  - Combined Bag, Bank Vault, Guild Bank, Void Storage
   - NPC/Quest Dialog, Trainers
   - Group Finder, Adventure Guide, Map and Quest Log
   - Guild, Communities, Mailbox, Friends List
@@ -42,8 +42,6 @@ Isn't this just [BlizzMove](https://www.curseforge.com/wow/addons/blizzmove)? Th
 ⸻
 
 ### KNOWN ISSUES
-
-The "Guild & Communities" window being movable broke as of 10.0.0. Support for moving this panel has been disabled until I can determine the cause.
 
 When certain protected panels are opened for the first time while in combat, DeModal cannot initially modify their behavior. These windows should get properly DeModal-fied once exiting combat. This is working as intended and is a fundamental limitation of working with protected frames in the WoW API.
 

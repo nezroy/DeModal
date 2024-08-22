@@ -97,6 +97,19 @@ function DeModalMixin:FixQuirks(fName, f)
         end
     elseif fName == "OrderHallTalentFrame" or fName == "MajorFactionRenownFrame" then
         f:HookScript("OnShow", hook_closeGossip_onShow)
+    elseif fName == "ContainerFrameCombinedBags" then
+        -- look for the dropdown "routing" button attached to the title bar and zap it
+        local children = {f:GetChildren()}
+        for i, child in ipairs(children) do
+            if child.routeToSibling and child.routeToSibling == "PortraitButton" then
+                Debug("found routing frame for container frame bags")
+                child:ClearAllPoints()
+                child:SetWidth(0)
+                child:SetHeight(0)
+                child:SetPoint("TOPLEFT", f)
+                break
+            end
+        end
     end
 end
 
@@ -232,7 +245,7 @@ local function hook_onDragStop(self)
 end
 AFP("hook_onDragStop", hook_onDragStop)
 
-function DeModalMixin:HookMovable(f, fName, wasArea)
+function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
     local UIPW = _G.UIPanelWindows
     if f:IsProtected() and InCombatLockdown() then
         Debug("defer hook of movable frame:", fName)
@@ -254,16 +267,20 @@ function DeModalMixin:HookMovable(f, fName, wasArea)
     f:SetMovable(true)
     f:SetToplevel(true)
     f:SetClampedToScreen(true)
-    f:EnableMouse(true)
-    f:HookScript("OnDragStart", f.StartMoving)
-    f:HookScript("OnDragStop", f.StopMovingOrSizing)
-    f:HookScript("OnDragStop", hook_onDragStop)
+    if (not skipMouse) then
+        f:EnableMouse(true)
+        f:HookScript("OnDragStart", f.StartMoving)
+        f:HookScript("OnDragStop", f.StopMovingOrSizing)
+        f:HookScript("OnDragStop", hook_onDragStop)
+    end
     if f:IsProtected() then
         f:HookScript("OnShow", protectedRaise_OnShow)
     else
         f:HookScript("OnShow", f.Raise)
     end
-    f:RegisterForDrag("LeftButton")
+    if (not skipMouse) then
+        f:RegisterForDrag("LeftButton")
+    end
     if f:GetNumPoints() == 0 then
         Debug("frame with 0 points, setting anchor:", fName)
         f:SetPoint("CENTER", UIParent)
@@ -350,6 +367,17 @@ function DeModalMixin:CloseWindowsHook(ignoreCenter, frameToIgnore)
     end
 end
 
+function DeModalMixin:UpdateContainerHook()
+    Debug("update bag position again here")
+    -- restore saved frame position
+    local frameDb = DEMODAL_DB["frames"]
+    if DEMODAL_CHAR_DB["per_char_positions"] then
+        frameDb = DEMODAL_CHAR_DB["frames"]
+    end
+    local fName = "ContainerFrameCombinedBags"
+    restore_position(_G[fName], fName, frameDb)
+end
+
 function DeModalMixin:LoadSelf()
     -- check/init settings
     if not DEMODAL_CHAR_DB then
@@ -373,6 +401,9 @@ function DeModalMixin:LoadSelf()
     -- hook CloseWindows for special handling of protected frames
     hooksecurefunc("CloseWindows", function() self:CloseWindowsHook() end)
 
+    -- hook UpdateContainerFrameAnchors for special handling of combined bag frame
+    hooksecurefunc("UpdateContainerFrameAnchors", function() self:UpdateContainerHook() end)
+
     -- hook pre-loaded simple frames
     local gv = PKG.gameVersion
     for i = 1, #PKG.frameXML do
@@ -380,7 +411,14 @@ function DeModalMixin:LoadSelf()
             local fName = PKG.frameXML[i].f
             local f = _G[ fName ]
             if f then
-                self:HookMovable(f, fName)
+                if (fName == "ContainerFrameCombinedBags") then
+                    -- we don't want to interfere with any of the in-bag mouse handling
+                    -- so we hook dragging etc. for ONLY the header
+                    self:HookMovable(f, fName, nil, true)
+                    self:HookMovableHeader(f, f.TitleContainer)
+                else
+                    self:HookMovable(f, fName)
+                end
             else
                 Debug("missing frame that should not be missing:", fName)
             end

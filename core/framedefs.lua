@@ -19,7 +19,8 @@ PKG.frameXML = {
     {["f"] = "LFGDungeonReadyDialog", ["mainline"] = true, ["cata"] = true, ["wrath"] = true, ["vanilla"] = true},
     {["f"] = "GuildInviteFrame", ["mainline"] = true, ["cata"] = false, ["wrath"] = false, ["vanilla"] = false},
     {["f"] = "QuestLogFrame", ["mainline"] = false, ["cata"] = true, ["wrath"] = true, ["vanilla"] = true},
-    {["f"] = "TaxiFrame", ["mainline"] = false, ["cata"] = true, ["wrath"] = true, ["vanilla"] = true}
+    {["f"] = "TaxiFrame", ["mainline"] = false, ["cata"] = true, ["wrath"] = true, ["vanilla"] = true},
+    {["f"] = "ContainerFrameCombinedBags", ["mainline"] = true, ["cata"] = false, ["wrath"] = false, ["vanilla"] = false}
 }
 
 -- frames loaded with specific blizzard addons
