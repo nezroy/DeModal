@@ -1,5 +1,9 @@
 package-as: DeModal
 
+manual-changelog:
+  filename: CHANGELOG_NEW.txt
+  markup-type: markdown
+
 ignore:
   - screenshots
   - assets
