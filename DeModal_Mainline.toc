@@ -27,6 +27,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+TaintLess/TaintLess.xml
 core/debug.lua
 core/framedefs.lua
 core/slashcommands.lua
