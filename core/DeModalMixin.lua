@@ -289,7 +289,7 @@ function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
     if wasArea or (UIPW[fName] and UIPW[fName]["area"]) then
         -- disable default panel positioning for this frame
         UIPW[fName]["area"] = nil
-        if not f:IsProtected() then
+        if not f:IsProtected() and fName ~= "PlayerSpellsFrame" then
             -- add to list of frames that get closed with ESC
             Debug("frame added to closable frames:", fName)
             -- add to this list so the generic window manager knows stuff was open

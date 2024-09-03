@@ -76,7 +76,9 @@ PKG.addonFrames = {
     ["Blizzard_TrainerUI"] = {"ClassTrainerFrame"},
     ["Blizzard_VoidStorageUI"] = {"VoidStorageFrame"},
     ["Blizzard_WeeklyRewards"] = {"WeeklyRewardsFrame"},
-    ["Blizzard_WorldMap"] = {"WorldMapFrame"}
+    ["Blizzard_WorldMap"] = {"WorldMapFrame"},
+    ["Blizzard_DelvesCompanionConfigurationFrame"] = {"DelvesCompanionConfigurationFrame", "DelvesCompanionAbilityListFrame"},
+    ["Blizzard_DelvesDifficultyPicker"] = {"DelvesDifficultyPickerFrame"}
 }
 
 -- frames with special header draggable handling
@@ -88,5 +90,6 @@ PKG.headerFrames = {
 -- names of close buttons for frames where this is necessary
 PKG.frameCloseButtons = {
     ["SpellBookFrame"] = {["name"] = "SpellBookFrameCloseButton", ["cata"] = "SpellBookCloseButton", ["wrath"] = "SpellBookCloseButton", ["tbc"] = "SpellBookCloseButton"},
-    ["CollectionsJournal"] = {["name"] = "CollectionsJournalCloseButton"}
+    ["CollectionsJournal"] = {["name"] = "CollectionsJournalCloseButton"},
+    ["PlayerSpellsFrame"] = {["name"] = "PlayerSpellsFrameCloseButton"},
 }
