@@ -1,2 +1,1 @@
-- Always treat new spellbook frame as secure for closing
-- Make some delve frames movable
+- Update TOC for 11.2.0
