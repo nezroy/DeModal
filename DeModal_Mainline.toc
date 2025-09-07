@@ -2,7 +2,7 @@
 ## Title: DeModal
 ## Notes: Make most default Blizz UI panels movable.
 ## IconTexture: Interface/Addons/DeModal/art/demodal_logo
-## OptionalDeps: _DebugLog, BugSack, !Stragglers, ACU
+## OptionalDeps: _DebugLog, BugSack, ACU
 ## Version: @project-version@
 ## X-Website: https://www.curseforge.com/wow/addons/demodal
 ## X-Curse-Project-ID: 631280

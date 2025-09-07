@@ -1,10 +1,8 @@
 local _, PKG = ...
 
 local Debug = PKG.Debug
-local AFP = PKG.AddProfiling
 
 local DeModalMixin = {}
-AFP("DeModalMixin", DeModalMixin)
 PKG.DeModalMixin = DeModalMixin
 
 function DeModalMixin:SetInternals()
@@ -32,15 +30,13 @@ end
 
 local function protectedRaise_OnShow(self)
     if not InCombatLockdown() then
-         self:Raise()
+        self:Raise()
     end
 end
-AFP("protectedRaise_OnShow", protectedRaise_OnShow)
 
 local function protectedDebug(self, ...)
     Debug(...)
 end
-AFP("protectedDebug", protectedDebug)
 
 local function isProtected(f, fName)
     return f:IsProtected() or PKG.treatAsProtected[fName]
@@ -65,14 +61,12 @@ local function hook_closeOnClick(self, button, down)
         CloseWindows()
     end
 end
-AFP("hook_closeOnClick", hook_closeOnClick)
 
 local function hook_closeGossip_onShow(self)
     if GossipFrame and GossipFrame:IsShown() then
         GossipFrameCloseButton:Click()
     end
 end
-AFP("hook_closeGossip_onShow", hook_closeGossip_onShow)
 
 -- fix various quirks unique to specific frames
 function DeModalMixin:FixQuirks(fName, f)
@@ -130,7 +124,6 @@ local function isMergedFrame(fName)
     end
     return false
 end
-AFP("isMergedFrame", isMergedFrame)
 
 local function hook_merged_onShow(self)
     local fName = self:GetName()
@@ -147,7 +140,6 @@ local function hook_merged_onShow(self)
         ClassTrainerFrameCloseButton:Click()
     end
 end
-AFP("hook_merged_onShow", hook_merged_onShow)
 
 local function restore_position(f, fName, frameDb)
     if not frameDb[fName] or #(frameDb[fName]) == 0 then
@@ -161,7 +153,6 @@ local function restore_position(f, fName, frameDb)
         f:SetPoint(pts[i][1], relF, pts[i][3], pts[i][4], pts[i][5])
     end
 end
-AFP("restore_position", restore_position)
 
 function DeModalMixin:PositionFrame(f, fName)
     Debug("position frame:", fName)
@@ -247,7 +238,6 @@ local function hook_onDragStop(self)
         end
     end
 end
-AFP("hook_onDragStop", hook_onDragStop)
 
 function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
     local UIPW = _G.UIPanelWindows
@@ -311,7 +301,7 @@ function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
             lp:ClearAllPoints()
             lp:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
             lp:SetSize(2, 2)
-            lp.Debug = protectedDebug
+            --lp.Debug = protectedDebug
             local btnClose = PKG.frameCloseButtons[fName]
             if btnClose then
                 local btnName = btnClose[PKG.gameVersion]

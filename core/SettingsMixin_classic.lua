@@ -1,10 +1,8 @@
 local _, PKG = ...
 
 local Debug = PKG.Debug
-local AFP = PKG.AddProfiling
 
 local SettingsMixin = {}
-AFP("SettingsMixin", SettingsMixin)
 PKG.SettingsMixin = SettingsMixin
 
 function SettingsMixin:SetTitle()
@@ -25,7 +23,6 @@ local function resetFrames_onClick(btn)
     table.wipe(DEMODAL_DB["frames"])
     ReloadUI()
 end
-AFP("resetFrames_onClickk", resetFrames_onClick)
 
 function SettingsMixin:AddOptions()
     local btn = CreateFrame("CheckButton", nil, self, "InterfaceOptionsCheckButtonTemplate")
@@ -62,7 +59,6 @@ local function setOptionDefaults()
         DEMODAL_DB["merge_frames"] = true
     end
 end
-AFP("setOptionDefaults", setOptionDefaults)
 
 function SettingsMixin:SetOptionValues()
     setOptionDefaults()

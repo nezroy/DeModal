@@ -1,10 +1,8 @@
 local _, PKG = ...
 
 local Debug = PKG.Debug
-local AFP = PKG.AddProfiling
 
 local SettingsMixin = {}
-AFP("SettingsMixin", SettingsMixin)
 PKG.SettingsMixin = SettingsMixin
 
 function SettingsMixin:SetTitle()
@@ -24,7 +22,6 @@ local function resetFrames_onClick(btn)
     table.wipe(DEMODAL_DB["frames"])
     ReloadUI()
 end
-AFP("resetFrames_onClick", resetFrames_onClick)
 
 function SettingsMixin:AddOptions()
     -- manually creating options until Blizzard's vertical frame taint bugs are sorted
@@ -54,12 +51,10 @@ end
 local function perCharPos_onClick(btn)
     DEMODAL_CHAR_DB["per_char_positions"] = btn:GetChecked()
 end
-AFP("perCharPos_onClick", perCharPos_onClick)
 
 local function mergeFrames_onClick(btn)
     DEMODAL_DB["merge_frames"] = btn:GetChecked()
 end
-AFP("mergeFrames_onClick", mergeFrames_onClick)
 
 local function setOptionDefaults()
     -- TODO: put this in a shared place
@@ -74,11 +69,10 @@ local function setOptionDefaults()
         DEMODAL_DB["merge_frames"] = true
     end
 end
-AFP("setOptionDefaults", setOptionDefaults)
 
 function SettingsMixin:SetOptionValues()
     setOptionDefaults()
-    
+
     local f = self.ScrollBox.ScrollTarget
 
     f.PerCharOption.Checkbox:HookScript("OnClick", perCharPos_onClick)
