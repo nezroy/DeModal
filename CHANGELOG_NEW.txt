@@ -1,1 +1,1 @@
-- Update TOC for 11.2.0
+- Fix taint error when using map window in combat

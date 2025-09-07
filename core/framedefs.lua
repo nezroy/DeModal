@@ -92,4 +92,10 @@ PKG.frameCloseButtons = {
     ["SpellBookFrame"] = {["name"] = "SpellBookFrameCloseButton", ["cata"] = "SpellBookCloseButton", ["wrath"] = "SpellBookCloseButton", ["tbc"] = "SpellBookCloseButton"},
     ["CollectionsJournal"] = {["name"] = "CollectionsJournalCloseButton"},
     ["PlayerSpellsFrame"] = {["name"] = "PlayerSpellsFrameCloseButton"},
+    ["WorldMapFrame"] = {["name"] = "WorldMapFrameCloseButton"}
+}
+
+-- frames that should be treated as protected even though IsProtected does not return true
+PKG.treatAsProtected = {
+    ["WorldMapFrame"] = true
 }

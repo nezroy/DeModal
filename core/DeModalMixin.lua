@@ -42,6 +42,10 @@ local function protectedDebug(self, ...)
 end
 AFP("protectedDebug", protectedDebug)
 
+local function isProtected(f, fName)
+    return f:IsProtected() or PKG.treatAsProtected[fName]
+end
+
 local protectedEsc_OnShow = [=[
     local keyEsc = GetBindingKey("TOGGLEGAMEMENU")
     local clsBtn = self:GetAttribute("CloseButtonName")
@@ -247,7 +251,7 @@ AFP("hook_onDragStop", hook_onDragStop)
 
 function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
     local UIPW = _G.UIPanelWindows
-    if f:IsProtected() and InCombatLockdown() then
+    if isProtected(f, fName) and InCombatLockdown() then
         Debug("defer hook of movable frame:", fName)
         local setWasArea = false
         if UIPW[fName] and UIPW[fName]["area"] then
@@ -273,7 +277,7 @@ function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
         f:HookScript("OnDragStop", f.StopMovingOrSizing)
         f:HookScript("OnDragStop", hook_onDragStop)
     end
-    if f:IsProtected() then
+    if isProtected(f, fName) then
         f:HookScript("OnShow", protectedRaise_OnShow)
     else
         f:HookScript("OnShow", f.Raise)
@@ -289,7 +293,7 @@ function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
     if wasArea or (UIPW[fName] and UIPW[fName]["area"]) then
         -- disable default panel positioning for this frame
         UIPW[fName]["area"] = nil
-        if not f:IsProtected() and fName ~= "PlayerSpellsFrame" then
+        if not isProtected(f, fName) then
             -- add to list of frames that get closed with ESC
             Debug("frame added to closable frames:", fName)
             -- add to this list so the generic window manager knows stuff was open
@@ -444,6 +448,8 @@ function DeModalMixin:LoadAddon(addonInfo, ignoreMissing)
                 -- dumb way to handle special frames that need extra work
                 if (f.Header) then
                     self:HookMovableHeader(f, f.Header)
+                elseif (fName == 'WorldMapFrame' and f.BorderFrame.TitleContainer) then
+                    self:HookMovableHeader(f, f.BorderFrame.TitleContainer)
                 else
                     self:HookMovableHeader(f, _G[ PKG.headerFrames[fName] ])
                 end
