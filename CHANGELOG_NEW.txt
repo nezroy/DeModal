@@ -1,1 +1,3 @@
-- Fix taint error when using map window in combat
+- Update loading method and TOC for Vanilla/Anniversary and Mists
+- Fix load error for settings in Vanilla/Anniversary and Mists
+- Make Chat Channels and Reforging windows movable

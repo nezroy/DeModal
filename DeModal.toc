@@ -1,4 +1,4 @@
-## Interface: 110200
+## Interface: 110205, 110200, 50500
 ## Title: DeModal
 ## Notes: Make most default Blizz UI panels movable.
 ## IconTexture: Interface/Addons/DeModal/art/demodal_logo
@@ -13,7 +13,7 @@
 ## SavedVariablesPerCharacter: DEMODAL_CHAR_DB
 ## SavedVariables: DEMODAL_DB
 
-# Copyright 2022 nezroy
+# Copyright 2025 nezroy
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@
 
 TaintLess/TaintLess.xml
 core/debug.lua
-core/framedefs.lua
-core/slashcommands.lua
+core/[Game]/framedefs.lua
 core/SettingsMixin.lua
+core/slashcommands.lua
 core/DeModalMixin.lua
 
 DeModal.lua

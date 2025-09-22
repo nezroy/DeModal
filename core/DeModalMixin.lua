@@ -75,12 +75,8 @@ function DeModalMixin:FixQuirks(fName, f)
         -- this might cause issues/overlap with the page label in other languages
         -- but it should be minor and I can't think of an alternative way to do it
         local wtf = _G.WardrobeTransmogFrame
-        if wtf then
-            if PKG.gameVersion == "mainline" or PKG.gameVersion == "cata" then
-                wtf.ToggleSecondaryAppearanceCheckbox.Label:ClearPoint("RIGHT")
-            else
-                wtf.ToggleSecondaryAppearanceCheckbox.Label:ClearPointByName("RIGHT")
-            end
+        if wtf and wtf.ToggleSecondaryAppearanceCheckbox.Label then
+            PKG.clearLabel(wtf.ToggleSecondaryAppearanceCheckbox.Label)
             wtf.ToggleSecondaryAppearanceCheckbox.Label:SetWidth(110)
         end
     elseif fName == "CollectionsJournal" then
@@ -169,11 +165,7 @@ function DeModalMixin:PositionFrame(f, fName)
         fitWidth = f:GetAttribute("UIPanelLayout-checkFitExtraWidth") or fitWidth
         fitHeight = f:GetAttribute("UIPanelLayout-checkFitExtraHeight") or fitHeight
     end
-    if PKG.gameVersion == "mainline" then
-        UIPanelUpdateScaleForFit(f, fitWidth, fitHeight);
-    else
-        UpdateScaleForFit(f, fitWidth, fitHeight);
-    end
+    PKG.updateScaleForFit(f, fitWidth, fitHeight)
     Debug("fit to scale:", fitWidth, fitHeight, f:GetScale())
 
     -- restore saved frame position
@@ -303,19 +295,11 @@ function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
             lp:SetSize(2, 2)
             --lp.Debug = protectedDebug
             local btnClose = PKG.frameCloseButtons[fName]
-            if btnClose then
-                local btnName = btnClose[PKG.gameVersion]
-                if not btnName then
-                    btnName = btnClose.name
-                end
-                if btnName and _G[btnName] then
-                    lp:SetAttribute("CloseButtonName", btnName)
-                    _G[btnName]:HookScript("OnClick", hook_closeOnClick)
-                else
-                    Debug("uh oh, close button did not exist:", btnName, fName)
-                end
+            if btnClose and _G[btnClose] then
+                lp:SetAttribute("CloseButtonName", btnClose)
+                _G[btnClose]:HookScript("OnClick", hook_closeOnClick)
             else
-                Debug("uh oh, missing close button name for protected frame:", fName)
+                Debug("uh oh, close button did not exist for frame:", fName, btnClose)
             end
             lp:SetAttribute("_onshow", protectedEsc_OnShow)
             lp:SetAttribute("_onhide", protectedEsc_OnHide)
@@ -399,23 +383,20 @@ function DeModalMixin:LoadSelf()
     hooksecurefunc("UpdateContainerFrameAnchors", function() self:UpdateContainerHook() end)
 
     -- hook pre-loaded simple frames
-    local gv = PKG.gameVersion
     for i = 1, #PKG.frameXML do
-        if PKG.frameXML[i][gv] then
-            local fName = PKG.frameXML[i].f
-            local f = _G[ fName ]
-            if f then
-                if (fName == "ContainerFrameCombinedBags") then
-                    -- we don't want to interfere with any of the in-bag mouse handling
-                    -- so we hook dragging etc. for ONLY the header
-                    self:HookMovable(f, fName, nil, true)
-                    self:HookMovableHeader(f, f.TitleContainer)
-                else
-                    self:HookMovable(f, fName)
-                end
+        local fName = PKG.frameXML[i]
+        local f = _G[ fName ]
+        if f then
+            if (fName == "ContainerFrameCombinedBags") then
+                -- we don't want to interfere with any of the in-bag mouse handling
+                -- so we hook dragging etc. for ONLY the header
+                self:HookMovable(f, fName, nil, true)
+                self:HookMovableHeader(f, f.TitleContainer)
             else
-                Debug("missing frame that should not be missing:", fName)
+                self:HookMovable(f, fName)
             end
+        else
+            Debug("missing frame that should not be missing:", fName)
         end
     end
 
@@ -436,7 +417,10 @@ function DeModalMixin:LoadAddon(addonInfo, ignoreMissing)
             self:HookMovable(f, fName)
             if PKG.headerFrames[fName] then
                 -- dumb way to handle special frames that need extra work
-                if (f.Header) then
+                local hdrName = PKG.headerFrames[fName]
+                if hdrName == '.TitleContainer' and f.TitleContainer then
+                    self:HookMovableHeader(f, f.TitleContainer)
+                elseif (f.Header) then
                     self:HookMovableHeader(f, f.Header)
                 elseif (fName == 'WorldMapFrame' and f.BorderFrame.TitleContainer) then
                     self:HookMovableHeader(f, f.BorderFrame.TitleContainer)
