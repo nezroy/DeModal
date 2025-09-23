@@ -6,7 +6,7 @@ PKG.frameXML = {
     "BankFrame", "MailFrame", "GossipFrame", "QuestFrame",
     "MerchantFrame", "TabardFrame", "GuildRegistrarFrame", "ItemTextFrame",
     "PetStableFrame", "LFGDungeonReadyDialog", "QuestLogFrame", "TaxiFrame",
-    "PVEFrame",
+    "PVEFrame", "QuestLogDetailFrame",
 }
 
 -- frames loaded with specific blizzard addons
