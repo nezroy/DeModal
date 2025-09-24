@@ -380,7 +380,9 @@ function DeModalMixin:LoadSelf()
     hooksecurefunc("CloseWindows", function() self:CloseWindowsHook() end)
 
     -- hook UpdateContainerFrameAnchors for special handling of combined bag frame
-    hooksecurefunc("UpdateContainerFrameAnchors", function() self:UpdateContainerHook() end)
+    if PKG.FF.CombinedBags then
+        hooksecurefunc("UpdateContainerFrameAnchors", function() self:UpdateContainerHook() end)
+    end
 
     -- hook pre-loaded simple frames
     for i = 1, #PKG.frameXML do

@@ -1,5 +1,10 @@
 local _, PKG = ...
 
+-- feature flags
+PKG.FF = {
+    ["CombinedBags"] = true,
+}
+
 -- simple frames that should always be pre-loaded
 PKG.frameXML = {
     "CharacterFrame", "PVEFrame", "DressUpFrame", "FriendsFrame",
