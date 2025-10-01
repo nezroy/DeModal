@@ -1,2 +1,2 @@
-- Update TOC for latest Classic Mists 5.5.1
-- Make quest log detail frame movable (Classic Mists)
+- Remove PTR from TOC
+- Fix logo problem
