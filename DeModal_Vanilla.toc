@@ -26,11 +26,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TaintLess/TaintLess.xml
-core/debug.lua
-core/Vanilla/framedefs.lua
-core/SettingsMixin.lua
-core/slashcommands.lua
-core/DeModalMixin.lua
+TaintLess\TaintLess.xml
+core\debug.lua
+core\Vanilla\framedefs.lua
+core\SettingsMixin.lua
+core\slashcommands.lua
+core\DeModalMixin.lua
 
 DeModal.lua

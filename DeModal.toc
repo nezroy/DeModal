@@ -1,7 +1,7 @@
 ## Interface: 110200, 50501
 ## Title: DeModal
 ## Notes: Make most default Blizz UI panels movable.
-## OptionalDeps: _DebugLog, BugSack, ACU
+## OptionalDeps: _DebugLog, BugSack
 ## Version: @project-version@
 ## X-Website: https://www.curseforge.com/wow/addons/demodal
 ## X-Curse-Project-ID: 631280
@@ -27,11 +27,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TaintLess/TaintLess.xml
-core/debug.lua
-core/[Game]/framedefs.lua
-core/SettingsMixin.lua
-core/slashcommands.lua
-core/DeModalMixin.lua
+TaintLess\TaintLess.xml
+core\debug.lua
+core\[Game]\framedefs.lua
+core\SettingsMixin.lua
+core\slashcommands.lua
+core\DeModalMixin.lua
 
 DeModal.lua
