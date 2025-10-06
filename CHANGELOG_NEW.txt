@@ -1,2 +1,1 @@
-- Remove PTR from TOC
-- Fix logo problem
+- Bump TOC for 11.2.5
