@@ -64,13 +64,18 @@ PKG.addonFrames = {
     ["Blizzard_WeeklyRewards"] = {"WeeklyRewardsFrame"},
     ["Blizzard_WorldMap"] = {"WorldMapFrame"},
     ["Blizzard_DelvesCompanionConfigurationFrame"] = {"DelvesCompanionConfigurationFrame", "DelvesCompanionAbilityListFrame"},
-    ["Blizzard_DelvesDifficultyPicker"] = {"DelvesDifficultyPickerFrame"}
+    ["Blizzard_DelvesDifficultyPicker"] = {"DelvesDifficultyPickerFrame"},
+    ["Blizzard_HousingDashboard"] = {"HousingDashboardFrame"},
+    ["Blizzard_HousingCornerstone"] = {"HousingCornerstonePurchaseFrame", "HousingCornerstoneVisitorFrame"},
+    ["Blizzard_HousingHouseFinder"] = {"HouseFinderFrame"},
+    ["Blizzard_HousingHouseSettings"] = {"HousingHouseSettingsFrame"},
 }
 
 -- frames with special header draggable handling
 PKG.headerFrames = {
     ["AchievementFrame"] = "AchievementFrameHeader",
-    ["WorldMapFrame"] = "WorldMapTitleButton"
+    ["WorldMapFrame"] = "WorldMapTitleButton",
+    ["HousingDashboardFrame"] = ".TitleContainer",
 }
 
 -- names of close buttons for frames where this is necessary
