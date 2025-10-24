@@ -1,2 +1,1 @@
-- Add housing frames
-- Add PTR to TOC
+- Update TOC for Classic Era
