@@ -1,1 +1,2 @@
-- Update TOC for Midnight Beta
+- Update TOC for Midnight Beta and Mists
+- Spec/Talent/Spellbook panel movement disabled temporarily for a known issue
