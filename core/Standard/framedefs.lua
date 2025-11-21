@@ -61,6 +61,7 @@ PKG.addonFrames = {
     ["Blizzard_TorghastLevelPicker"] = {"TorghastLevelPickerFrame"},
     ["Blizzard_TradeSkillUI"] = {"TradeSkillFrame"},
     ["Blizzard_TrainerUI"] = {"ClassTrainerFrame"},
+    ["Blizzard_Transmog"] = {"TransmogFrame"},
     ["Blizzard_WeeklyRewards"] = {"WeeklyRewardsFrame"},
     ["Blizzard_WorldMap"] = {"WorldMapFrame"},
     ["Blizzard_DelvesCompanionConfigurationFrame"] = {"DelvesCompanionConfigurationFrame", "DelvesCompanionAbilityListFrame"},
