@@ -70,6 +70,7 @@ PKG.addonFrames = {
     ["Blizzard_HousingCornerstone"] = {"HousingCornerstonePurchaseFrame", "HousingCornerstoneVisitorFrame"},
     ["Blizzard_HousingHouseFinder"] = {"HouseFinderFrame"},
     ["Blizzard_HousingHouseSettings"] = {"HousingHouseSettingsFrame"},
+    ["Blizzard_HousingBulletinBoard"] = {"HousingBulletinBoardFrame"},
 }
 
 -- frames with special header draggable handling
