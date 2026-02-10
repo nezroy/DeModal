@@ -1,3 +1,1 @@
-- Add Housing Bulletin Board frame
-- Add new retail transmog frame
-- Update TOC for MoP, TBC
+- Add Cooldown Manager settings window
