@@ -72,6 +72,7 @@ PKG.addonFrames = {
     ["Blizzard_HousingHouseFinder"] = {"HouseFinderFrame"},
     ["Blizzard_HousingHouseSettings"] = {"HousingHouseSettingsFrame"},
     ["Blizzard_HousingBulletinBoard"] = {"HousingBulletinBoardFrame"},
+    ["Blizzard_HousingModelPreview"] = {"HousingModelPreviewFrame"},
     ["Blizzard_CooldownViewer"] = {"CooldownViewerSettings"},
 }
 
@@ -80,6 +81,7 @@ PKG.headerFrames = {
     ["AchievementFrame"] = "AchievementFrameHeader",
     ["WorldMapFrame"] = "WorldMapTitleButton",
     ["HousingDashboardFrame"] = ".TitleContainer",
+    ["HouingModelPreviewFrame"] = ".TitleContainer",
 }
 
 -- names of close buttons for frames where this is necessary
