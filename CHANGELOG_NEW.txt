@@ -1,2 +1,1 @@
-- Update TOC for Midnight
-- Add currency transfer frame
+- Housing decor frame (zcourge)
