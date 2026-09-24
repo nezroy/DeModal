@@ -26,6 +26,9 @@ function DeModalMixin:SetInternals()
 
     -- track certain frame hooks to make sure they are not nested/repeated
     self.hookedMergeFrames = {}
+
+    -- track frames already hooked to prevent double-hooking
+    self.hookedFrames = {}
 end
 
 local function protectedRaise_OnShow(self)
@@ -232,13 +235,22 @@ local function hook_onDragStop(self)
 end
 
 function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
+    if self.hookedFrames[fName] then
+        Debug("frame already hooked, skipping:", fName)
+        return
+    end
+    self.hookedFrames[fName] = true
+
     local UIPW = _G.UIPanelWindows
     if isProtected(f, fName) and InCombatLockdown() then
         Debug("defer hook of movable frame:", fName)
         local setWasArea = false
         if UIPW[fName] and UIPW[fName]["area"] then
             -- disable default panel positioning for this frame
-            UIPW[fName]["area"] = nil
+            UIPW[fName] = nil
+            setWasArea = true
+        end
+        if f:GetAttribute("UIPanelLayout-area") then
             setWasArea = true
         end
         tinsert(self.fixProtectedFrames, {f, fName, setWasArea})
@@ -272,10 +284,28 @@ function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
         f:SetPoint("CENTER", UIParent)
     end
 
-    if wasArea or (UIPW[fName] and UIPW[fName]["area"]) then
+    -- check for attribute-based panel layout (used in newer clients like Camelot)
+    local hasAttrArea = f:GetAttribute("UIPanelLayout-area") ~= nil
+    if hasAttrArea then
+        -- clear all panel layout attributes to fully deregister from panel manager
+        f:SetAttribute("UIPanelLayout-area", nil)
+        f:SetAttribute("UIPanelLayout-defined", nil)
+        f:SetAttribute("UIPanelLayout-enabled", nil)
+        f:SetAttribute("UIPanelLayout-whichPoint", nil)
+        f:SetAttribute("UIPanelLayout-xoffset", nil)
+        f:SetAttribute("UIPanelLayout-yoffset", nil)
+    end
+
+    if wasArea or hasAttrArea or (UIPW[fName] and UIPW[fName]["area"]) then
         -- disable default panel positioning for this frame
-        UIPW[fName]["area"] = nil
-        if not isProtected(f, fName) then
+        if hasAttrArea then
+            -- attribute-based client: remove entirely from panel manager
+            UIPW[fName] = nil
+        elseif UIPW[fName] then
+            -- table-based client: clear area only
+            UIPW[fName]["area"] = nil
+        end
+        if not isProtected(f, fName) or (PKG.FF.SecureESCHandlers == false) then
             -- add to list of frames that get closed with ESC
             Debug("frame added to closable frames:", fName)
             -- add to this list so the generic window manager knows stuff was open
@@ -373,11 +403,39 @@ function DeModalMixin:LoadSelf()
         }
     end
 
+    -- Fallback: some clients (e.g. Camelot/WoW Forever) don't reliably load
+    -- account-level SavedVariables, so restore frames data from a per-character
+    -- backup if the account-level data is empty
+    if not next(DEMODAL_DB["frames"]) and DEMODAL_CHAR_DB["_frames_fallback"] and next(DEMODAL_CHAR_DB["_frames_fallback"]) then
+        Debug("restoring frames from per-character fallback")
+        DEMODAL_DB["frames"] = DEMODAL_CHAR_DB["_frames_fallback"]
+    end
+    -- Always keep a per-character copy of frames data as fallback
+    DEMODAL_CHAR_DB["_frames_fallback"] = DEMODAL_DB["frames"]
+
     -- finish setting up options panel now that variables are loaded
     PKG.SettingsMixin.Init():SetOptionValues()
 
     -- hook CloseWindows for special handling of protected frames
     hooksecurefunc("CloseWindows", function() self:CloseWindowsHook() end)
+
+    -- hook ShowUIPanel to restore saved positions after panel manager repositioning
+    hooksecurefunc("ShowUIPanel", function(frame)
+        if frame and frame.GetName then
+            local fName = frame:GetName()
+            if fName and self.hookedFrames[fName] then
+                local fName_to_restore = fName
+                if isMergedFrame(fName) then
+                    fName_to_restore = "GossipFrame"
+                end
+                local frameDb = DEMODAL_DB["frames"]
+                if DEMODAL_CHAR_DB["per_char_positions"] then
+                    frameDb = DEMODAL_CHAR_DB["frames"]
+                end
+                restore_position(frame, fName_to_restore, frameDb)
+            end
+        end
+    end)
 
     -- hook UpdateContainerFrameAnchors for special handling of combined bag frame
     if PKG.FF.CombinedBags then
