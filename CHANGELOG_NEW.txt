@@ -1,2 +1,3 @@
 - Update TOCs for all versions
 - Add combined bag and collections handling to Forever
+- Bump addon version and add explicit addon packaging

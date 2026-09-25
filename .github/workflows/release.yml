@@ -1,0 +1,29 @@
+name: Package and release
+
+on:
+  push:
+    tags:
+      - '**'
+
+# needs permissions for create github release
+permissions:
+  contents: write
+
+jobs:
+  release:
+
+    runs-on: ubuntu-latest
+
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+
+      # we first have to clone the AddOn project, this is a required step
+      - name: Clone project
+        uses: actions/checkout@v7
+
+      # once cloned, we just run the GitHub Action
+      - name: Package and release
+        uses: BigWigsMods/packager@v2
