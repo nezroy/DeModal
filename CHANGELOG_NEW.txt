@@ -1,1 +1,2 @@
-- Housing decor frame (zcourge)
+- Update TOCs for all versions
+- Add combined bag and collections handling to Forever

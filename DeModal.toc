@@ -1,4 +1,4 @@
-## Interface: 11508, 16001, 20505, 50503, 120001
+## Interface: 11509, 16001, 20506, 50504, 120100
 ## Title: DeModal
 ## Notes: Make most default Blizz UI panels movable.
 ## OptionalDeps: _DebugLog, BugSack

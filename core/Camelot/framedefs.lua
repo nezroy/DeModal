@@ -2,7 +2,7 @@ local _, PKG = ...
 
 -- feature flags
 PKG.FF = {
-    ["CombinedBags"] = false,
+    ["CombinedBags"] = true,
     ["SecureESCHandlers"] = false, -- Camelot restricted env lacks loadstring
 }
 
@@ -12,6 +12,7 @@ PKG.frameXML = {
     "BankFrame", "MailFrame", "GossipFrame", "QuestFrame",
     "MerchantFrame", "TabardFrame", "GuildRegistrarFrame", "ItemTextFrame",
     "PetStableFrame", "LFGDungeonReadyDialog", "QuestLogFrame", "TaxiFrame",
+    "ContainerFrameCombinedBags"
 }
 
 -- frames loaded with specific blizzard addons
@@ -19,6 +20,7 @@ PKG.addonFrames = {
     ["Blizzard_AuctionUI"] = {"AuctionFrame"},
     ["Blizzard_Calendar"] = {"CalendarFrame"},
     ["Blizzard_ClassTalentUI"] = {"ClassTalentFrame"},
+    ["Blizzard_Collections"] = {"CollectionsJournal", "WardrobeFrame"},
     ["Blizzard_Communities"] = {"CommunitiesFrame", "CommunitiesGuildLogFrame", "CommunitiesGuildTextEditFrame", "CommunitiesGuildNewsFiltersFrame", "ChannelFrame"},
     ["Blizzard_EncounterJournal"] = {"EncounterJournal"},
     ["Blizzard_ExpansionLandingPage"] = {"ExpansionLandingPage"},
@@ -52,6 +54,7 @@ PKG.headerFrames = {
 PKG.frameCloseButtons = {
     ["PlayerSpellsFrame"] = "PlayerSpellsFrameCloseButton",
     ["WorldMapFrame"] = "WorldMapFrameCloseButton",
+    ["CollectionsJournal"] = "CollectionsJournalCloseButton",
 }
 
 -- frames that should be treated as protected even though IsProtected does not return true
