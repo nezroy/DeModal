@@ -1,3 +1,4 @@
-- Update TOCs for all versions
-- Add combined bag and collections handling to Forever
-- Bump addon version and add explicit addon packaging
+- Update layout overrides to avoid taint
+- Fix some windows that did not save position or multi-open correctly (e.g. Spellbook on Forever beta)
+- Fix errors when moving protected windows in combat (since that is no longer allowed as of 11.1.7)
+- Allow normal ESC handling in Forever beta now that they've fixed the missing secure env

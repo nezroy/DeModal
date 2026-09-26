@@ -55,7 +55,8 @@ local protectedEsc_OnShow = [=[
 ]=]
 
 local protectedEsc_OnHide = [=[
-    self:ClearBindings()
+    local keyEsc = GetBindingKey("TOGGLEGAMEMENU")
+    self:ClearBinding(keyEsc)
 ]=]
 
 local function hook_closeOnClick(self, button, down)
@@ -144,6 +145,10 @@ local function restore_position(f, fName, frameDb)
     if not frameDb[fName] or #(frameDb[fName]) == 0 then
         return
     end
+    if InCombatLockdown() and isProtected(f, fName) then
+        -- TODO: defer this til out of combat rather than completely skip this
+        return
+    end
     f:ClearAllPoints()
     local pts = frameDb[fName]
     for i = 1, #(pts) do
@@ -158,16 +163,13 @@ function DeModalMixin:PositionFrame(f, fName)
     -- set default frame scale based on the original UI window manager stuff (UpdateScale et al)
     local fitWidth = 20
     local fitHeight = 20
-    if not f:GetAttribute("UIPanelLayout-defined") then
-	    local def_attrs = UIPanelWindows[f:GetName()];
-	    if def_attrs then
-            fitWidth = def_attrs["checkFitExtraWidth"] or fitWidth
-            fitHeight = def_attrs["checkFitExtraHeight"] or fitHeight
-	    end
-    else
-        fitWidth = f:GetAttribute("UIPanelLayout-checkFitExtraWidth") or fitWidth
-        fitHeight = f:GetAttribute("UIPanelLayout-checkFitExtraHeight") or fitHeight
+    local def_attrs = UIPanelWindows[f:GetName()];
+    if def_attrs then
+        fitWidth = def_attrs["checkFitExtraWidth"] or fitWidth
+        fitHeight = def_attrs["checkFitExtraHeight"] or fitHeight
     end
+    fitWidth = f:GetAttribute("UIPanelLayout-checkFitExtraWidth") or fitWidth
+    fitHeight = f:GetAttribute("UIPanelLayout-checkFitExtraHeight") or fitHeight
     PKG.updateScaleForFit(f, fitWidth, fitHeight)
     Debug("fit to scale:", fitWidth, fitHeight, f:GetScale())
 
@@ -187,8 +189,23 @@ function DeModalMixin:PositionFrame(f, fName)
     restore_position(f, fName_to_restore, frameDb)
 end
 
+local function hook_onDragStart(self)
+    local fName = self:GetName()
+    if isProtected(self, fName) and InCombatLockdown() then
+        -- can no longer move protected frames in combat
+        return
+    end
+    self:StartMoving()
+end
+
 local function hook_onDragStop(self)
     local fName = self:GetName()
+    if isProtected(self, fName) and InCombatLockdown() then
+        -- can no longer move protected frames in combat
+        return
+    end
+    self:StopMovingOrSizing()
+
     local fName_to_save = fName
     Debug("update saved frame position:", fName)
 
@@ -234,30 +251,16 @@ local function hook_onDragStop(self)
     end
 end
 
-function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
-    if self.hookedFrames[fName] then
-        Debug("frame already hooked, skipping:", fName)
-        return
-    end
-    self.hookedFrames[fName] = true
-
-    local UIPW = _G.UIPanelWindows
-    if isProtected(f, fName) and InCombatLockdown() then
+function DeModalMixin:HookMovable(f, fName, skipMouse)
+    local f_is_protected = isProtected(f, fName)
+    if f_is_protected and InCombatLockdown() then
         Debug("defer hook of movable frame:", fName)
-        local setWasArea = false
-        if UIPW[fName] and UIPW[fName]["area"] then
-            -- disable default panel positioning for this frame
-            UIPW[fName] = nil
-            setWasArea = true
-        end
-        if f:GetAttribute("UIPanelLayout-area") then
-            setWasArea = true
-        end
-        tinsert(self.fixProtectedFrames, {f, fName, setWasArea})
+        tinsert(self.fixProtectedFrames, {f, fName})
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         return
     else
         Debug("hook movable frame:", fName)
+        self.hookedFrames[fName] = true
     end
 
     self:FixQuirks(fName, f)
@@ -267,11 +270,10 @@ function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
     f:SetClampedToScreen(true)
     if (not skipMouse) then
         f:EnableMouse(true)
-        f:HookScript("OnDragStart", f.StartMoving)
-        f:HookScript("OnDragStop", f.StopMovingOrSizing)
+        f:HookScript("OnDragStart", hook_onDragStart)
         f:HookScript("OnDragStop", hook_onDragStop)
     end
-    if isProtected(f, fName) then
+    if f_is_protected then
         f:HookScript("OnShow", protectedRaise_OnShow)
     else
         f:HookScript("OnShow", f.Raise)
@@ -284,56 +286,61 @@ function DeModalMixin:HookMovable(f, fName, wasArea, skipMouse)
         f:SetPoint("CENTER", UIParent)
     end
 
-    -- check for attribute-based panel layout (used in newer clients like Camelot)
-    local hasAttrArea = f:GetAttribute("UIPanelLayout-area") ~= nil
-    if hasAttrArea then
-        -- clear all panel layout attributes to fully deregister from panel manager
-        f:SetAttribute("UIPanelLayout-area", nil)
-        f:SetAttribute("UIPanelLayout-defined", nil)
-        f:SetAttribute("UIPanelLayout-enabled", nil)
-        f:SetAttribute("UIPanelLayout-whichPoint", nil)
-        f:SetAttribute("UIPanelLayout-xoffset", nil)
-        f:SetAttribute("UIPanelLayout-yoffset", nil)
+    -- tell panel manager to ignore this frame
+    f:SetAttributeNoHandler("UIPanelLayout-defined", true)
+    f:SetAttributeNoHandler("UIPanelLayout-area", nil)
+    if fName == "GenericTraitFrame" or fName == "PlayerSpellsFrame" then
+        -- a couple of frames will reset the area attr in certain situations
+        -- register hooks to handle that as best we can
+        Debug("setup attr fix hook for", fName)
+        hooksecurefunc(f, "SetAttributeNoHandler", function(tbl, attr, val)
+            --Debug("attr set on frame", fName, attr, val)
+            if attr ~= "UIPanelLayout-area" or not val or not tbl then
+                return
+            end
+            if f_is_protected and InCombatLockdown() then
+                -- could figure out how to defer this til out of combat,
+                -- but for PlayerSpellsFrame this should re-fire the next
+                -- time the frame is opened out of combat anyway, and
+                -- GenericTraitsFrame currently only does this once on
+                -- initial load/setup, for the most part
+                return
+            end
+            Debug("post SetAttribute area fix for", fName)
+            tbl:SetAttributeNoHandler("UIPanelLayout-area", nil)
+        end)
     end
 
-    if wasArea or hasAttrArea or (UIPW[fName] and UIPW[fName]["area"]) then
-        -- disable default panel positioning for this frame
-        if hasAttrArea then
-            -- attribute-based client: remove entirely from panel manager
-            UIPW[fName] = nil
-        elseif UIPW[fName] then
-            -- table-based client: clear area only
-            UIPW[fName]["area"] = nil
-        end
-        if not isProtected(f, fName) or (PKG.FF.SecureESCHandlers == false) then
-            -- add to list of frames that get closed with ESC
-            Debug("frame added to closable frames:", fName)
-            -- add to this list so the generic window manager knows stuff was open
-            -- (and therefore doesn't show the ESC menu)
-            tinsert(UISpecialFrames, fName)
-            -- add to this list so we can also "click" close buttons to cleanup in
-            -- our CloseWindows hook, as some frames need extra processing to close
-            -- properly (e.g. AnimaDiversionFrame) that is not otherwise run
-            tinsert(self.uiClosableFrames, f)
+    if not f_is_protected then
+        -- add to list of frames that get closed with ESC
+        Debug("frame added to closable frames:", fName)
+        -- add to this list so the generic window manager knows stuff was open
+        -- (and therefore doesn't show the ESC menu)
+        tinsert(UISpecialFrames, fName)
+        -- add to this list so we can also "click" close buttons to cleanup in
+        -- our CloseWindows hook, as some frames need extra processing to close
+        -- properly (e.g. AnimaDiversionFrame) that is not otherwise run
+        tinsert(self.uiClosableFrames, f)
+    else
+        -- special handling required for ESC on protected frames; the down-side
+        -- is that in combat the "close all" behavior of ESC won't work with this,
+        -- and instead ESC closes one protected frame at a time
+        Debug("frame is protected, need special ESC handler:", fName)
+        tinsert(self.uiProtectedFrames, fName)
+        local lp = CreateFrame("Frame", nil, f, "SecureHandlerShowHideTemplate")
+        lp:ClearAllPoints()
+        lp:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
+        lp:SetSize(2, 2)
+        --lp.Debug = protectedDebug
+        local btnClose = PKG.frameCloseButtons[fName]
+        if btnClose and _G[btnClose] then
+            lp:SetAttributeNoHandler("CloseButtonName", btnClose)
+            _G[btnClose]:HookScript("OnClick", hook_closeOnClick)
         else
-            -- special handling required for ESC on protected frames
-            Debug("frame is protected, need special ESC handler:", fName)
-            tinsert(self.uiProtectedFrames, fName)
-            local lp = CreateFrame("Frame", nil, f, "SecureHandlerShowHideTemplate")
-            lp:ClearAllPoints()
-            lp:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
-            lp:SetSize(2, 2)
-            --lp.Debug = protectedDebug
-            local btnClose = PKG.frameCloseButtons[fName]
-            if btnClose and _G[btnClose] then
-                lp:SetAttribute("CloseButtonName", btnClose)
-                _G[btnClose]:HookScript("OnClick", hook_closeOnClick)
-            else
-                Debug("uh oh, close button did not exist for frame:", fName, btnClose)
-            end
-            lp:SetAttribute("_onshow", protectedEsc_OnShow)
-            lp:SetAttribute("_onhide", protectedEsc_OnHide)
+            Debug("uh oh, close button did not exist for frame:", fName, btnClose)
         end
+        lp:SetAttributeNoHandler("_onshow", protectedEsc_OnShow)
+        lp:SetAttributeNoHandler("_onhide", protectedEsc_OnHide)
     end
 
     if self.entered then
@@ -350,18 +357,21 @@ function DeModalMixin:HookMovableHeader(f, hf)
     end
     Debug("hook movable header for frame:", hf:GetName())
     hf:EnableMouse(true)
-    hf:HookScript("OnDragStart", function () f:StartMoving() end)
-    hf:HookScript("OnDragStop", function () f:StopMovingOrSizing() end)
+    hf:HookScript("OnDragStart", function () hook_onDragStart(f) end)
     hf:HookScript("OnDragStop", function () hook_onDragStop(f) end)
     hf:RegisterForDrag("LeftButton")
 end
 
 function DeModalMixin:CloseWindowsHook(ignoreCenter, frameToIgnore)
     for i, f in ipairs(self.uiClosableFrames) do
-        local fName = f:GetName()
-        local fBtn = f.CloseButton or _G[fName .. "CloseButton"]
-        if fBtn and fBtn.Click then
-            fBtn:Click()
+        if not f:IsShown() then
+            -- CloseWindows already hid all these using UISpecialWindows,
+            -- we're just doing some potential cleanup here for those windows
+            local fName = f:GetName()
+            local fBtn = f.CloseButton or _G[fName .. "CloseButton"]
+            if fBtn and fBtn.Click then
+                fBtn:Click()
+            end
         end
     end
     if InCombatLockdown() then
@@ -369,8 +379,8 @@ function DeModalMixin:CloseWindowsHook(ignoreCenter, frameToIgnore)
     end
     for i, fName in ipairs(self.uiProtectedFrames) do
         local f = _G[ fName ]
-        if f and (not frameToIgnore or frameToIgnore ~= f) then
-            f:Hide()
+        if f and f:IsShown() and (not frameToIgnore or frameToIgnore ~= f) then
+            HideUIPanel(f)
         end
     end
 end
@@ -384,6 +394,36 @@ function DeModalMixin:UpdateContainerHook()
     end
     local fName = "ContainerFrameCombinedBags"
     restore_position(_G[fName], fName, frameDb)
+end
+
+function DeModalMixin:SetupFrame(f, fName)
+    if self.hookedFrames[fName] then
+        Debug("frame already hooked, skipping:", fName)
+        return
+        -- HookMovable will set this on successful completion
+        -- which makes for split logic but meh
+    end
+    if (fName == "ContainerFrameCombinedBags") then
+        -- we don't want to interfere with any of the in-bag mouse handling
+        -- so we hook dragging etc. for ONLY the header
+        self:HookMovable(f, fName, true)
+        self:HookMovableHeader(f, f.TitleContainer)
+    else
+        self:HookMovable(f, fName)
+        if PKG.headerFrames[fName] then
+            -- dumb way to handle special frames that need extra work
+            local hdrName = PKG.headerFrames[fName]
+            if hdrName == '.TitleContainer' and f.TitleContainer then
+                self:HookMovableHeader(f, f.TitleContainer)
+            elseif (f.Header) then
+                self:HookMovableHeader(f, f.Header)
+            elseif (fName == 'WorldMapFrame' and f.BorderFrame.TitleContainer) then
+                self:HookMovableHeader(f, f.BorderFrame.TitleContainer)
+            else
+                self:HookMovableHeader(f, _G[ PKG.headerFrames[fName] ])
+            end
+        end
+    end
 end
 
 function DeModalMixin:LoadSelf()
@@ -419,24 +459,6 @@ function DeModalMixin:LoadSelf()
     -- hook CloseWindows for special handling of protected frames
     hooksecurefunc("CloseWindows", function() self:CloseWindowsHook() end)
 
-    -- hook ShowUIPanel to restore saved positions after panel manager repositioning
-    hooksecurefunc("ShowUIPanel", function(frame)
-        if frame and frame.GetName then
-            local fName = frame:GetName()
-            if fName and self.hookedFrames[fName] then
-                local fName_to_restore = fName
-                if isMergedFrame(fName) then
-                    fName_to_restore = "GossipFrame"
-                end
-                local frameDb = DEMODAL_DB["frames"]
-                if DEMODAL_CHAR_DB["per_char_positions"] then
-                    frameDb = DEMODAL_CHAR_DB["frames"]
-                end
-                restore_position(frame, fName_to_restore, frameDb)
-            end
-        end
-    end)
-
     -- hook UpdateContainerFrameAnchors for special handling of combined bag frame
     if PKG.FF.CombinedBags then
         hooksecurefunc("UpdateContainerFrameAnchors", function() self:UpdateContainerHook() end)
@@ -447,14 +469,7 @@ function DeModalMixin:LoadSelf()
         local fName = PKG.frameXML[i]
         local f = _G[ fName ]
         if f then
-            if (fName == "ContainerFrameCombinedBags") then
-                -- we don't want to interfere with any of the in-bag mouse handling
-                -- so we hook dragging etc. for ONLY the header
-                self:HookMovable(f, fName, nil, true)
-                self:HookMovableHeader(f, f.TitleContainer)
-            else
-                self:HookMovable(f, fName)
-            end
+            self:SetupFrame(f, fName)
         else
             Debug("missing frame that should not be missing:", fName)
         end
@@ -474,20 +489,7 @@ function DeModalMixin:LoadAddon(addonInfo, ignoreMissing)
     for _, fName in ipairs(addonInfo) do
         local f = _G[ fName ]
         if f then
-            self:HookMovable(f, fName)
-            if PKG.headerFrames[fName] then
-                -- dumb way to handle special frames that need extra work
-                local hdrName = PKG.headerFrames[fName]
-                if hdrName == '.TitleContainer' and f.TitleContainer then
-                    self:HookMovableHeader(f, f.TitleContainer)
-                elseif (f.Header) then
-                    self:HookMovableHeader(f, f.Header)
-                elseif (fName == 'WorldMapFrame' and f.BorderFrame.TitleContainer) then
-                    self:HookMovableHeader(f, f.BorderFrame.TitleContainer)
-                else
-                    self:HookMovableHeader(f, _G[ PKG.headerFrames[fName] ])
-                end
-            end
+            self:SetupFrame(f, fName)
         elseif not ignoreMissing then
             Debug("missing frame that should not be missing:", fName)
         end
@@ -519,7 +521,7 @@ function DeModalMixin:PlayerRegenEnabledEvent()
         for i, fixMe in ipairs(self.fixProtectedFrames) do
             local f = fixMe[1]
             f:Hide()
-            self:HookMovable(f, fixMe[2], fixMe[3])
+            self:SetupFrame(f, fixMe[2])
         end
         wipe(self.fixProtectedFrames)
     end

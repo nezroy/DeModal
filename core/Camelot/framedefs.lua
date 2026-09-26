@@ -3,7 +3,6 @@ local _, PKG = ...
 -- feature flags
 PKG.FF = {
     ["CombinedBags"] = true,
-    ["SecureESCHandlers"] = false, -- Camelot restricted env lacks loadstring
 }
 
 -- simple frames that should always be pre-loaded
