@@ -17,6 +17,7 @@ PKG.frameXML = {
 -- frames loaded with specific blizzard addons
 PKG.addonFrames = {
     ["Blizzard_AuctionUI"] = {"AuctionFrame"},
+    ["Blizzard_AuctionHouseUI"] = {"AuctionHouseFrame"},
     ["Blizzard_Calendar"] = {"CalendarFrame"},
     ["Blizzard_ClassTalentUI"] = {"ClassTalentFrame"},
     ["Blizzard_Collections"] = {"CollectionsJournal", "WardrobeFrame"},

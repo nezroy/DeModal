@@ -1,4 +1,1 @@
-- Update layout overrides to avoid taint
-- Fix some windows that did not save position or multi-open correctly (e.g. Spellbook on Forever beta)
-- Fix errors when moving protected windows in combat (since that is no longer allowed as of 11.1.7)
-- Allow normal ESC handling in Forever beta now that they've fixed the missing secure env
+- Add Auction House support in Forever beta
