@@ -53,11 +53,3 @@ PKG.frameCloseButtons = {
 -- frames that should be treated as protected even though IsProtected does not return true
 PKG.treatAsProtected = {
 }
-
-PKG.clearLabel = function(label)
-    label:ClearPointsByName("RIGHT")
-end
-
-PKG.updateScaleForFit = function(f, fitWidth, fitHeight)
-    FrameUtil.UpdateScaleForFit(f, fitWidth, fitHeight)
-end

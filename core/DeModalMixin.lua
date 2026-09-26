@@ -80,8 +80,15 @@ function DeModalMixin:FixQuirks(fName, f)
         -- but it should be minor and I can't think of an alternative way to do it
         local wtf = _G.WardrobeTransmogFrame
         if wtf and wtf.ToggleSecondaryAppearanceCheckbox.Label then
-            PKG.clearLabel(wtf.ToggleSecondaryAppearanceCheckbox.Label)
-            wtf.ToggleSecondaryAppearanceCheckbox.Label:SetWidth(110)
+            local wtfl = wtf.ToggleSecondaryAppearanceCheckbox.Label
+            if wtfl.ClearPoint then
+                wtfl:ClearPoint("RIGHT")
+            elseif wtfl.ClearPointsByName then
+                wtfl:ClearPointsByName("RIGHT")
+            else
+                Debug("no ClearPoint method found!")
+            end
+            wtfl:SetWidth(110)
         end
     elseif fName == "CollectionsJournal" then
         -- collection journal is on the "HIGH" strata by default
@@ -170,7 +177,13 @@ function DeModalMixin:PositionFrame(f, fName)
     end
     fitWidth = f:GetAttribute("UIPanelLayout-checkFitExtraWidth") or fitWidth
     fitHeight = f:GetAttribute("UIPanelLayout-checkFitExtraHeight") or fitHeight
-    PKG.updateScaleForFit(f, fitWidth, fitHeight)
+    if UIPanelUpdateScaleForFit then
+        UIPanelUpdateScaleForFit(f, fitWidth, fitHeight)
+    elseif FrameUtil and FrameUtil.UpdateScaleForFit then
+        FrameUtil.UpdateScaleForFit(f, fitWidth, fitHeight)
+    else
+        Debug("no UpdateScaleForFit method found!")
+    end
     Debug("fit to scale:", fitWidth, fitHeight, f:GetScale())
 
     -- restore saved frame position

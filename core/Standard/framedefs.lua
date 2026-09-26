@@ -96,11 +96,3 @@ PKG.frameCloseButtons = {
 PKG.treatAsProtected = {
     ["WorldMapFrame"] = true
 }
-
-PKG.clearLabel = function(label)
-    label:ClearPoint("RIGHT")
-end
-
-PKG.updateScaleForFit = function(f, fitWidth, fitHeight)
-    UIPanelUpdateScaleForFit(f, fitWidth, fitHeight)
-end
