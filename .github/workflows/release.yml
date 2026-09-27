@@ -23,6 +23,8 @@ jobs:
       # we first have to clone the AddOn project, this is a required step
       - name: Clone project
         uses: actions/checkout@v7
+        with:
+          lfs: true
 
       # once cloned, we just run the GitHub Action
       - name: Package and release

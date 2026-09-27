@@ -1,1 +1,2 @@
 - Add Legacy window to Forever
+- Fix logo in packaging
