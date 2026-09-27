@@ -1,1 +1,2 @@
-- Further tweaks to reduce possible taint
+- Window registration tweaks to reduce possible taint
+- Hook ONLY the "header" element when possible to reduce mouse issues and taint

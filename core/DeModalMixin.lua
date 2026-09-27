@@ -326,69 +326,61 @@ function DeModalMixin:HookMovable(f, fName, skipMouse)
         f:EnableMouse(true)
         f:HookScript("OnDragStart", hook_onDragStart)
         f:HookScript("OnDragStop", hook_onDragStop)
+        f:RegisterForDrag("LeftButton")
     end
     if f_is_protected then
         f:HookScript("OnShow", protectedRaise_OnShow)
     else
         f:HookScript("OnShow", f.Raise)
     end
-    if (not skipMouse) then
-        f:RegisterForDrag("LeftButton")
-    end
     if f:GetNumPoints() == 0 then
         Debug("frame with 0 points, setting anchor")
         f:SetPoint("CENTER", UIParent)
     end
 
-    if (UIPanelWindows[fName] and UIPanelWindows[fName]["area"]) or f:GetAttribute("UIPanelLayout-area") then
-        -- tell panel manager to ignore this frame
-        f:SetAttributeNoHandler("UIPanelLayout-area", nil)
-        -- We don't set -defined because we need the panel manager to init/load
-        -- the panel attrs for some cases (e.g. maximize the worldmap). Plus, there
-        -- are cases where the area gets set again later for various reasons.
-        -- Register a hook to just reset area back to nil as needed.
-        hooksecurefunc(f, "SetAttributeNoHandler", hook_SetAttribute)
-        Debug("frame area attribute hook registered")
-        if not f_is_protected then
-            Debug("frame added to closable frames")
-            -- add to this list so the generic window manager will hide these on ESC
-            -- (and also find open windows so it doesn't show the game menu)
-            tinsert(UISpecialFrames, fName)
-            if fName == "AnimaDiversionFrame" then
-                -- add some frames to this list so we can "click" close buttons to
-                -- cleanup in our CloseWindows hook, as some frames need extra processing
-                -- to that is not otherwise run on a simple :Hide() call
-                tinsert(self.uiClosableFrames, f)
-            end
-        else
-            -- special handling required for ESC on protected frames; the down-side
-            -- is that in combat the "close all" behavior of ESC won't work with this,
-            -- and instead ESC closes one protected frame at a time
-            Debug("frame is protected, need special ESC handler")
-            tinsert(self.uiProtectedFrames, fName)
-            local lp = CreateFrame("Frame", nil, f, "SecureHandlerShowHideTemplate")
-            lp:ClearAllPoints()
-            lp:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
-            lp:SetSize(2, 2)
-            local btnClose = get_close_button(f)
-            if btnClose then
-                lp:SetFrameRef("CloseButtonRef", btnClose)
-                btnClose:HookScript("OnClick", hook_closeOnClick)
-            else
-                Debug("uh oh, close button did not exist for frame")
-            end
-            lp:SetAttributeNoHandler("_onshow", protectedEsc_OnShow)
-            lp:SetAttributeNoHandler("_onhide", protectedEsc_OnHide)
-        end
-    else
+    if (not UIPanelWindows[fName] or not UIPanelWindows[fName]["area"]) and not f:GetAttribute("UIPanelLayout-area") then
         Debug("frame is not a panel-managed frame")
+        return
     end
 
-    if self.entered then
-        self:PositionFrame(f, fName)
+    -- tell panel manager to ignore this frame
+    f:SetAttributeNoHandler("UIPanelLayout-area", nil)
+    -- We don't set -defined because we need the panel manager to init/load
+    -- the panel attrs for some cases (e.g. maximize the worldmap). Plus, there
+    -- are cases where the area gets set again later for various reasons.
+    -- Register a hook to just reset area back to nil as needed.
+    hooksecurefunc(f, "SetAttributeNoHandler", hook_SetAttribute)
+    Debug("frame area attribute hook registered")
+    if not f_is_protected then
+        Debug("frame added to closable frames")
+        -- add to this list so the generic window manager will hide these on ESC
+        -- (and also find open windows so it doesn't show the game menu)
+        tinsert(UISpecialFrames, fName)
+        if fName == "AnimaDiversionFrame" then
+            -- add some frames to this list so we can "click" close buttons to
+            -- cleanup in our CloseWindows hook, as some frames need extra processing
+            -- to that is not otherwise run on a simple :Hide() call
+            tinsert(self.uiClosableFrames, f)
+        end
     else
-        -- put the frame into the list of frames that still need scale/position applied
-        tinsert(self.positionFrames, {f, fName})
+        -- special handling required for ESC on protected frames; the down-side
+        -- is that in combat the "close all" behavior of ESC won't work with this,
+        -- and instead ESC closes one protected frame at a time
+        Debug("frame is protected, need special ESC handler")
+        tinsert(self.uiProtectedFrames, fName)
+        local lp = CreateFrame("Frame", nil, f, "SecureHandlerShowHideTemplate")
+        lp:ClearAllPoints()
+        lp:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
+        lp:SetSize(2, 2)
+        local btnClose = get_close_button(f)
+        if btnClose then
+            lp:SetFrameRef("CloseButtonRef", btnClose)
+            btnClose:HookScript("OnClick", hook_closeOnClick)
+        else
+            Debug("uh oh, close button did not exist for frame")
+        end
+        lp:SetAttributeNoHandler("_onshow", protectedEsc_OnShow)
+        lp:SetAttributeNoHandler("_onhide", protectedEsc_OnHide)
     end
 end
 
@@ -396,7 +388,7 @@ function DeModalMixin:HookMovableHeader(f, hf)
     if not f or not hf then
         return
     end
-    Debug("hook movable header for frame:", hf:GetName())
+    Debug("hook movable header")
     hf:EnableMouse(true)
     hf:HookScript("OnDragStart", function () hook_onDragStart(f) end)
     hf:HookScript("OnDragStop", function () hook_onDragStop(f) end)
@@ -447,26 +439,34 @@ function DeModalMixin:SetupFrame(f, fName)
         -- HookMovable will set this on successful completion
         -- which makes for split logic but meh
     end
-    if (fName == "ContainerFrameCombinedBags") then
-        -- we don't want to interfere with any of the in-bag mouse handling
-        -- so we hook dragging etc. for ONLY the header
+    -- find the best candidate for this window's header
+    local hdr = f.Header
+    if not hdr then
+        hdr = f.TitleContainer
+    end
+    if not hdr and f.BorderFrame then
+        hdr = f.BorderFrame.TitleContainer
+    end
+    if not hdr then
+        hdr = _G[fName .. "Header"]
+    end
+    if not hdr and fName == "WorldMapFrame" then
+        hdr = _G["WorldMapTitleButton"]
+    end
+    if hdr then
+        -- hook only the header for dragging; this is preferred because it's less
+        -- likely to cause taint or issues with the mouse inside the window
         self:HookMovable(f, fName, true)
-        self:HookMovableHeader(f, f.TitleContainer)
+        self:HookMovableHeader(f, hdr)
     else
+        -- hook the whole window for dragging
         self:HookMovable(f, fName)
-        if PKG.headerFrames[fName] then
-            -- dumb way to handle special frames that need extra work
-            local hdrName = PKG.headerFrames[fName]
-            if hdrName == '.TitleContainer' and f.TitleContainer then
-                self:HookMovableHeader(f, f.TitleContainer)
-            elseif (f.Header) then
-                self:HookMovableHeader(f, f.Header)
-            elseif (fName == 'WorldMapFrame' and f.BorderFrame.TitleContainer) then
-                self:HookMovableHeader(f, f.BorderFrame.TitleContainer)
-            else
-                self:HookMovableHeader(f, _G[ PKG.headerFrames[fName] ])
-            end
-        end
+    end
+    if self.entered then
+        self:PositionFrame(f, fName)
+    else
+        -- put the frame into the list of frames that still need scale/position applied
+        tinsert(self.positionFrames, {f, fName})
     end
 end
 

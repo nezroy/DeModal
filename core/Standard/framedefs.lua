@@ -75,14 +75,6 @@ PKG.addonFrames = {
     ["Blizzard_CooldownViewer"] = {"CooldownViewerSettings"},
 }
 
--- frames with special header draggable handling
-PKG.headerFrames = {
-    ["AchievementFrame"] = "AchievementFrameHeader",
-    ["WorldMapFrame"] = "WorldMapTitleButton",
-    ["HousingDashboardFrame"] = ".TitleContainer",
-    ["HouingModelPreviewFrame"] = ".TitleContainer",
-}
-
 -- frames that should be treated as protected even though IsProtected does not return true
 PKG.treatAsProtected = {
 }

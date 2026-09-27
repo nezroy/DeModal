@@ -45,13 +45,6 @@ PKG.addonFrames = {
     ["Blizzard_WorldMap"] = {"WorldMapFrame"}
 }
 
--- frames with special header draggable handling
-PKG.headerFrames = {
-    ["AchievementFrame"] = "AchievementFrameHeader",
-    ["WorldMapFrame"] = "WorldMapTitleButton",
-    ["ReforgingFrame"] = ".TitleContainer",
-}
-
 -- frames that should be treated as protected even though IsProtected does not return true
 PKG.treatAsProtected = {
 }
