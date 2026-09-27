@@ -1,3 +1,1 @@
-- Add Auction House support in Forever beta
-- Fix World Map breaking when trying to maximize it
-- Fix some protected frames not closing with ESC
+- Further tweaks to reduce possible taint

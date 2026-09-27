@@ -55,8 +55,7 @@ local protectedEsc_OnHide = [=[
 ]=]
 
 local function hook_closeOnClick(self, button, down)
-    if button == "ESC" then
-        -- TODO: not 100% sure this is taint-safe; might need an incombat wrap
+    if button == "ESC" and not InCombatLockdown() then
         CloseWindows()
     end
 end
@@ -314,7 +313,7 @@ function DeModalMixin:HookMovable(f, fName, skipMouse)
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         return
     else
-        Debug("hook movable frame:", fName)
+        Debug("--- hook movable frame:", fName)
         self.hookedFrames[fName] = true
     end
 
@@ -337,48 +336,52 @@ function DeModalMixin:HookMovable(f, fName, skipMouse)
         f:RegisterForDrag("LeftButton")
     end
     if f:GetNumPoints() == 0 then
-        Debug("frame with 0 points, setting anchor:", fName)
+        Debug("frame with 0 points, setting anchor")
         f:SetPoint("CENTER", UIParent)
     end
 
-    -- tell panel manager to ignore this frame
-    f:SetAttributeNoHandler("UIPanelLayout-area", nil)
-    -- We don't set -defined because we need the panel manager to init/load
-    -- the panel attrs for some cases (e.g. maximize the worldmap). Plus, there
-    -- are cases where the area gets set again later for various reasons.
-    -- Register a hook to just reset area back to nil as needed.
-    hooksecurefunc(f, "SetAttributeNoHandler", hook_SetAttribute)
-
-    if not f_is_protected then
-        Debug("frame added to closable frames:", fName)
-        -- add to this list so the generic window manager will hide these on ESC
-        -- (and also find open windows, so it doesn't show the game menu on ESC)
-        tinsert(UISpecialFrames, fName)
-        if fName == "AnimaDiversionFrame" then
-            -- add some frames to this list so we can "click" close buttons to
-            -- cleanup in our CloseWindows hook, as some frames need extra processing
-            -- to close properly that is not otherwise run on a simple :Hide() call
-            tinsert(self.uiClosableFrames, f)
+    if (UIPanelWindows[fName] and UIPanelWindows[fName]["area"]) or f:GetAttribute("UIPanelLayout-area") then
+        -- tell panel manager to ignore this frame
+        f:SetAttributeNoHandler("UIPanelLayout-area", nil)
+        -- We don't set -defined because we need the panel manager to init/load
+        -- the panel attrs for some cases (e.g. maximize the worldmap). Plus, there
+        -- are cases where the area gets set again later for various reasons.
+        -- Register a hook to just reset area back to nil as needed.
+        hooksecurefunc(f, "SetAttributeNoHandler", hook_SetAttribute)
+        Debug("frame area attribute hook registered")
+        if not f_is_protected then
+            Debug("frame added to closable frames")
+            -- add to this list so the generic window manager will hide these on ESC
+            -- (and also find open windows so it doesn't show the game menu)
+            tinsert(UISpecialFrames, fName)
+            if fName == "AnimaDiversionFrame" then
+                -- add some frames to this list so we can "click" close buttons to
+                -- cleanup in our CloseWindows hook, as some frames need extra processing
+                -- to that is not otherwise run on a simple :Hide() call
+                tinsert(self.uiClosableFrames, f)
+            end
+        else
+            -- special handling required for ESC on protected frames; the down-side
+            -- is that in combat the "close all" behavior of ESC won't work with this,
+            -- and instead ESC closes one protected frame at a time
+            Debug("frame is protected, need special ESC handler")
+            tinsert(self.uiProtectedFrames, fName)
+            local lp = CreateFrame("Frame", nil, f, "SecureHandlerShowHideTemplate")
+            lp:ClearAllPoints()
+            lp:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
+            lp:SetSize(2, 2)
+            local btnClose = get_close_button(f)
+            if btnClose then
+                lp:SetFrameRef("CloseButtonRef", btnClose)
+                btnClose:HookScript("OnClick", hook_closeOnClick)
+            else
+                Debug("uh oh, close button did not exist for frame")
+            end
+            lp:SetAttributeNoHandler("_onshow", protectedEsc_OnShow)
+            lp:SetAttributeNoHandler("_onhide", protectedEsc_OnHide)
         end
     else
-        -- special handling required for ESC on protected frames; the down-side
-        -- is that in combat the "close all" behavior of ESC won't work with this,
-        -- and instead ESC closes one protected frame at a time
-        Debug("frame is protected, need special ESC handler:", fName)
-        tinsert(self.uiProtectedFrames, fName)
-        local lp = CreateFrame("Frame", nil, f, "SecureHandlerShowHideTemplate")
-        lp:ClearAllPoints()
-        lp:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
-        lp:SetSize(2, 2)
-        local btnClose = get_close_button(f)
-        if btnClose then
-            lp:SetFrameRef("CloseButtonRef", btnClose)
-            btnClose:HookScript("OnClick", hook_closeOnClick)
-        else
-            Debug("uh oh, close button did not exist for frame:", fName)
-        end
-        lp:SetAttributeNoHandler("_onshow", protectedEsc_OnShow)
-        lp:SetAttributeNoHandler("_onhide", protectedEsc_OnHide)
+        Debug("frame is not a panel-managed frame")
     end
 
     if self.entered then
