@@ -143,8 +143,14 @@ local function hook_merged_onShow(self)
     end
 end
 
-local function restore_position(f, fName, frameDb)
-    if not frameDb[fName] or #(frameDb[fName]) == 0 then
+local function restore_position(f, fName)
+    local db = nil
+    if DEMODAL_CHAR_DB["per_char_positions"] then
+        db = DEMODAL_CHAR_DB["frames"]
+    else
+        db = DEMODAL_DB["frames"]
+    end
+    if not db or not db[fName] or #(db[fName]) == 0 then
         return
     end
     if InCombatLockdown() and isProtected(f, fName) then
@@ -152,7 +158,7 @@ local function restore_position(f, fName, frameDb)
         return
     end
     f:ClearAllPoints()
-    local pts = frameDb[fName]
+    local pts = db[fName]
     for i = 1, #(pts) do
         local relF = _G[pts[i][2]] or UIParent
         Debug("point:", pts[i][1], pts[i][2], pts[i][3], pts[i][4], pts[i][5])
@@ -182,10 +188,6 @@ function DeModalMixin:PositionFrame(f, fName)
     Debug("fit to scale:", fitWidth, fitHeight, f:GetScale())
 
     -- restore saved frame position
-    local frameDb = DEMODAL_DB["frames"]
-    if DEMODAL_CHAR_DB["per_char_positions"] then
-        frameDb = DEMODAL_CHAR_DB["frames"]
-    end
     local fName_to_restore = fName
     -- check if we've already hooked this; if not, add the hook
     -- I don't think I ever re-call frame positioning currently, but it should be safe to do so
@@ -194,7 +196,7 @@ function DeModalMixin:PositionFrame(f, fName)
         f:HookScript("OnShow", hook_merged_onShow)
         self.hookedMergeFrames[fName] = true
     end
-    restore_position(f, fName_to_restore, frameDb)
+    restore_position(f, fName_to_restore)
 end
 
 local function hook_onDragStart(self)
@@ -204,6 +206,22 @@ local function hook_onDragStart(self)
         return
     end
     self:StartMoving()
+end
+
+local function wipe_frame_db(fName)
+    local db = DEMODAL_DB
+    if DEMODAL_CHAR_DB["per_char_positions"] then
+        db = DEMODAL_CHAR_DB
+    end
+    if db["frames"] then
+        if db["frames"][fName] then
+            table.wipe(db["frames"][fName])
+        else
+            db["frames"][fName] = {}
+        end
+        return db["frames"][fName]
+    end
+    return nil
 end
 
 local function hook_onDragStop(self)
@@ -230,31 +248,27 @@ local function hook_onDragStop(self)
     if DEMODAL_CHAR_DB["per_char_positions"] then
         frameDb = DEMODAL_CHAR_DB["frames"]
     end
-    if frameDb[fName_to_save] then
-        table.wipe(frameDb[fName_to_save])
-    else
-        frameDb[fName_to_save] = {}
-    end
+    local db = wipe_frame_db(fName_to_save)
     for i = 1, self:GetNumPoints() do
         local pt, relTo, relPt, xOfs, yOfs = self:GetPoint(i)
         local relName = (relTo and relTo:GetName()) or "UIParent"
         Debug("point:", pt, relName, relPt, xOfs, yOfs)
-        frameDb[fName_to_save][i] = {pt, relName, relPt, xOfs, yOfs}
+        db[i] = {pt, relName, relPt, xOfs, yOfs}
     end
 
     -- re-position other merged frames too
     if isMergedFrame(fName) then
         if fName ~= "GossipFrame" and GossipFrame then
-            restore_position(GossipFrame, fName_to_save, frameDb)
+            restore_position(GossipFrame, fName_to_save)
         end
         if fName ~= "QuestFrame" and QuestFrame then
-            restore_position(QuestFrame, fName_to_save, frameDb)
+            restore_position(QuestFrame, fName_to_save)
         end
         if fName ~= "MerchantFrame" and MerchantFrame then
-            restore_position(MerchantFrame, fName_to_save, frameDb)
+            restore_position(MerchantFrame, fName_to_save)
         end
         if fName ~= "ClassTrainerFrame" and ClassTrainerFrame then
-            restore_position(ClassTrainerFrame, fName_to_save, frameDb)
+            restore_position(ClassTrainerFrame, fName_to_save)
         end
     end
 end
@@ -408,15 +422,21 @@ function DeModalMixin:CloseWindowsHook(ignoreCenter, frameToIgnore)
     end
 end
 
-function DeModalMixin:UpdateContainerHook()
-    Debug("update bag position again here")
-    -- restore saved frame position
-    local frameDb = DEMODAL_DB["frames"]
-    if DEMODAL_CHAR_DB["per_char_positions"] then
-        frameDb = DEMODAL_CHAR_DB["frames"]
-    end
+local function hook_UpdateContainer()
     local fName = "ContainerFrameCombinedBags"
-    restore_position(_G[fName], fName, frameDb)
+    local f = _G[fName]
+    if f then
+        Debug("restore combined bag position")
+        restore_position(f, fName)
+    end
+end
+
+local function hook_RestoreUI(f)
+    if not f or not f.GetName then
+        return
+    end
+    Debug("restore window position after un-maximizing:", f:GetName())
+    restore_position(f, f:GetName())
 end
 
 function DeModalMixin:SetupFrame(f, fName)
@@ -480,11 +500,18 @@ function DeModalMixin:LoadSelf()
     PKG.SettingsMixin.Init():SetOptionValues()
 
     -- hook CloseWindows for special handling of protected frames
-    hooksecurefunc("CloseWindows", function() self:CloseWindowsHook() end)
+    if CloseWindows then
+        hooksecurefunc("CloseWindows", function() self:CloseWindowsHook() end)
+    end
 
     -- hook UpdateContainerFrameAnchors for special handling of combined bag frame
-    if PKG.FF.CombinedBags then
-        hooksecurefunc("UpdateContainerFrameAnchors", function() self:UpdateContainerHook() end)
+    if UpdateContainerFrameAnchors and ContainerFrameCombinedBags then
+        hooksecurefunc("UpdateContainerFrameAnchors", hook_UpdateContainer)
+    end
+
+    -- hook RestoreUIPanelArea to reset position after un-maximizing a window
+    if RestoreUIPanelArea then
+        hooksecurefunc("RestoreUIPanelArea", hook_RestoreUI)
     end
 
     -- hook pre-loaded simple frames
