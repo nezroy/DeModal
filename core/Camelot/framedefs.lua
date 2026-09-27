@@ -42,6 +42,7 @@ PKG.addonFrames = {
     ["Blizzard_WeeklyRewards"] = {"WeeklyRewardsFrame"},
     ["Blizzard_WorldMap"] = {"WorldMapFrame"},
     ["Blizzard_CooldownViewer"] = {"CooldownViewerSettings"},
+    ["Blizzard_LegacySystem"] = {"LegacySystemFrame"},
 }
 
 -- frames that should be treated as protected even though IsProtected does not return true
