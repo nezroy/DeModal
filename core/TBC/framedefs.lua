@@ -43,12 +43,6 @@ PKG.headerFrames = {
     ["WorldMapFrame"] = "WorldMapTitleButton"
 }
 
--- names of close buttons for frames where this is necessary
-PKG.frameCloseButtons = {
-    ["SpellBookFrame"] = "SpellBookCloseButton",
-    ["WorldMapFrame"] = "WorldMapFrameCloseButton"
-}
-
 -- frames that should be treated as protected even though IsProtected does not return true
 PKG.treatAsProtected = {
 }

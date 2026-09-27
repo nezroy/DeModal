@@ -83,14 +83,6 @@ PKG.headerFrames = {
     ["HouingModelPreviewFrame"] = ".TitleContainer",
 }
 
--- names of close buttons for frames where this is necessary
-PKG.frameCloseButtons = {
-    ["SpellBookFrame"] = "SpellBookFrameCloseButton",
-    ["CollectionsJournal"] = "CollectionsJournalCloseButton",
-    ["PlayerSpellsFrame"] = "PlayerSpellsFrameCloseButton",
-    ["WorldMapFrame"] = "WorldMapFrameCloseButton"
-}
-
 -- frames that should be treated as protected even though IsProtected does not return true
 PKG.treatAsProtected = {
 }
