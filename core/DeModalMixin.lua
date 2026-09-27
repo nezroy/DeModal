@@ -351,15 +351,15 @@ function DeModalMixin:HookMovable(f, fName, skipMouse)
 
     if not f_is_protected then
         Debug("frame added to closable frames:", fName)
-        -- add to this list so the generic window manager knows stuff was open
-        -- (and therefore closes it with ESC and doesn't show the ESC menu)
+        -- add to this list so the generic window manager will hide these on ESC
+        -- (and also find open windows, so it doesn't show the game menu on ESC)
         tinsert(UISpecialFrames, fName)
-        -- add to this list so we can also "click" close buttons to cleanup in
-        -- our CloseWindows hook, as some frames need extra processing to close
-        -- properly (e.g. AnimaDiversionFrame) that is not otherwise run,
-        -- because UISpecialFrames get "closed" with a simple :Hide() call
-        -- instead of a HideUIPanel() call
-        tinsert(self.uiClosableFrames, f)
+        if fName == "AnimaDiversionFrame" then
+            -- add some frames to this list so we can "click" close buttons to
+            -- cleanup in our CloseWindows hook, as some frames need extra processing
+            -- to close properly that is not otherwise run on a simple :Hide() call
+            tinsert(self.uiClosableFrames, f)
+        end
     else
         -- special handling required for ESC on protected frames; the down-side
         -- is that in combat the "close all" behavior of ESC won't work with this,
@@ -403,8 +403,6 @@ end
 function DeModalMixin:CloseWindowsHook(ignoreCenter, frameToIgnore)
     for i, f in ipairs(self.uiClosableFrames) do
         if not f:IsShown() then
-            -- CloseWindows already hid all these using UISpecialWindows,
-            -- we're just doing some potential cleanup here for those windows
             local btnClose = get_close_button(f)
             if btnClose and btnClose.Click then
                 btnClose:Click()
