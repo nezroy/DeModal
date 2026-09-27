@@ -94,5 +94,4 @@ PKG.frameCloseButtons = {
 
 -- frames that should be treated as protected even though IsProtected does not return true
 PKG.treatAsProtected = {
-    ["WorldMapFrame"] = true
 }

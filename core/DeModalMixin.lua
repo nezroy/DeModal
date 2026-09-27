@@ -37,19 +37,14 @@ local function protectedRaise_OnShow(self)
     end
 end
 
-local function protectedDebug(self, ...)
-    Debug(...)
-end
-
 local function isProtected(f, fName)
     return f:IsProtected() or PKG.treatAsProtected[fName]
 end
 
 local protectedEsc_OnShow = [=[
     local keyEsc = GetBindingKey("TOGGLEGAMEMENU")
-    local clsBtn = self:GetAttribute("CloseButtonName")
+    local clsBtn = self:GetFrameRef("CloseButtonRef")
     if clsBtn and keyEsc ~= nil then
-        --self:CallMethod("Debug", "set close button", clsBtn)
         self:SetBindingClick(false, keyEsc, clsBtn, "ESC")
     end
 ]=]
@@ -264,6 +259,39 @@ local function hook_onDragStop(self)
     end
 end
 
+local function hook_SetAttribute(tbl, attr, val)
+    if attr ~= "UIPanelLayout-area" or not val or not tbl then
+        return
+    end
+    local fName = "Unknown"
+    if tbl.GetName then
+        fName = tbl:GetName()
+    end
+    if isProtected(tbl, fName) and InCombatLockdown() then
+        -- could figure out how to defer this til out of combat,
+        -- but for ex. PlayerSpellsFrame this should re-fire the next
+        -- time the frame is opened out of combat anyway
+        return
+    end
+    Debug("post SetAttribute area fix for", fName)
+    tbl:SetAttributeNoHandler("UIPanelLayout-area", nil)
+end
+
+local function get_close_button(f)
+    if not f then
+        return nil
+    end
+    local btn = f.CloseButton
+    if not btn and f.GetName then
+        local fName = f:GetName()
+        btn = _G[fName .. "CloseButton"]
+        if not btn and fName == "SpellBookFrame" then
+            btn = _G["SpellBookCloseButton"]
+        end
+    end
+    return btn
+end
+
 function DeModalMixin:HookMovable(f, fName, skipMouse)
     local f_is_protected = isProtected(f, fName)
     if f_is_protected and InCombatLockdown() then
@@ -300,39 +328,23 @@ function DeModalMixin:HookMovable(f, fName, skipMouse)
     end
 
     -- tell panel manager to ignore this frame
-    f:SetAttributeNoHandler("UIPanelLayout-defined", true)
     f:SetAttributeNoHandler("UIPanelLayout-area", nil)
-    if fName == "GenericTraitFrame" or fName == "PlayerSpellsFrame" then
-        -- a couple of frames will reset the area attr in certain situations
-        -- register hooks to handle that as best we can
-        Debug("setup attr fix hook for", fName)
-        hooksecurefunc(f, "SetAttributeNoHandler", function(tbl, attr, val)
-            --Debug("attr set on frame", fName, attr, val)
-            if attr ~= "UIPanelLayout-area" or not val or not tbl then
-                return
-            end
-            if f_is_protected and InCombatLockdown() then
-                -- could figure out how to defer this til out of combat,
-                -- but for PlayerSpellsFrame this should re-fire the next
-                -- time the frame is opened out of combat anyway, and
-                -- GenericTraitsFrame currently only does this once on
-                -- initial load/setup, for the most part
-                return
-            end
-            Debug("post SetAttribute area fix for", fName)
-            tbl:SetAttributeNoHandler("UIPanelLayout-area", nil)
-        end)
-    end
+    -- We don't set -defined because we need the panel manager to init/load
+    -- the panel attrs for some cases (e.g. maximize the worldmap). Plus, there
+    -- are cases where the area gets set again later for various reasons.
+    -- Register a hook to just reset area back to nil as needed.
+    hooksecurefunc(f, "SetAttributeNoHandler", hook_SetAttribute)
 
     if not f_is_protected then
-        -- add to list of frames that get closed with ESC
         Debug("frame added to closable frames:", fName)
         -- add to this list so the generic window manager knows stuff was open
-        -- (and therefore doesn't show the ESC menu)
+        -- (and therefore closes it with ESC and doesn't show the ESC menu)
         tinsert(UISpecialFrames, fName)
         -- add to this list so we can also "click" close buttons to cleanup in
         -- our CloseWindows hook, as some frames need extra processing to close
-        -- properly (e.g. AnimaDiversionFrame) that is not otherwise run
+        -- properly (e.g. AnimaDiversionFrame) that is not otherwise run,
+        -- because UISpecialFrames get "closed" with a simple :Hide() call
+        -- instead of a HideUIPanel() call
         tinsert(self.uiClosableFrames, f)
     else
         -- special handling required for ESC on protected frames; the down-side
@@ -344,13 +356,12 @@ function DeModalMixin:HookMovable(f, fName, skipMouse)
         lp:ClearAllPoints()
         lp:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
         lp:SetSize(2, 2)
-        --lp.Debug = protectedDebug
-        local btnClose = PKG.frameCloseButtons[fName]
-        if btnClose and _G[btnClose] then
-            lp:SetAttributeNoHandler("CloseButtonName", btnClose)
-            _G[btnClose]:HookScript("OnClick", hook_closeOnClick)
+        local btnClose = get_close_button(f)
+        if btnClose then
+            lp:SetFrameRef("CloseButtonRef", btnClose)
+            btnClose:HookScript("OnClick", hook_closeOnClick)
         else
-            Debug("uh oh, close button did not exist for frame:", fName, btnClose)
+            Debug("uh oh, close button did not exist for frame:", fName)
         end
         lp:SetAttributeNoHandler("_onshow", protectedEsc_OnShow)
         lp:SetAttributeNoHandler("_onhide", protectedEsc_OnHide)
@@ -380,10 +391,9 @@ function DeModalMixin:CloseWindowsHook(ignoreCenter, frameToIgnore)
         if not f:IsShown() then
             -- CloseWindows already hid all these using UISpecialWindows,
             -- we're just doing some potential cleanup here for those windows
-            local fName = f:GetName()
-            local fBtn = f.CloseButton or _G[fName .. "CloseButton"]
-            if fBtn and fBtn.Click then
-                fBtn:Click()
+            local btnClose = get_close_button(f)
+            if btnClose and btnClose.Click then
+                btnClose:Click()
             end
         end
     end
