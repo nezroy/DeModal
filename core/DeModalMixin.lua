@@ -306,17 +306,6 @@ local function get_close_button(f)
 end
 
 function DeModalMixin:HookMovable(f, fName, skipMouse)
-    local f_is_protected = isProtected(f, fName)
-    if f_is_protected and InCombatLockdown() then
-        Debug("defer hook of movable frame:", fName)
-        tinsert(self.fixProtectedFrames, {f, fName})
-        self:RegisterEvent("PLAYER_REGEN_ENABLED")
-        return
-    else
-        Debug("--- hook movable frame:", fName)
-        self.hookedFrames[fName] = true
-    end
-
     self:FixQuirks(fName, f)
 
     f:SetMovable(true)
@@ -328,6 +317,8 @@ function DeModalMixin:HookMovable(f, fName, skipMouse)
         f:HookScript("OnDragStop", hook_onDragStop)
         f:RegisterForDrag("LeftButton")
     end
+
+    local f_is_protected = isProtected(f, fName)
     if f_is_protected then
         f:HookScript("OnShow", protectedRaise_OnShow)
     else
@@ -436,9 +427,19 @@ function DeModalMixin:SetupFrame(f, fName)
     if self.hookedFrames[fName] then
         Debug("frame already hooked, skipping:", fName)
         return
-        -- HookMovable will set this on successful completion
-        -- which makes for split logic but meh
     end
+
+    -- defer protected frame setup til out of combat
+    if isProtected(f, fName) and InCombatLockdown() then
+        Debug("defer setup of movable frame:", fName)
+        tinsert(self.fixProtectedFrames, {f, fName})
+        self:RegisterEvent("PLAYER_REGEN_ENABLED")
+        return
+    else
+        Debug("--- hook movable frame:", fName)
+        self.hookedFrames[fName] = true
+    end
+
     -- find the best candidate for this window's header
     local hdr = f.Header
     if not hdr then
