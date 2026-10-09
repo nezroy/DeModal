@@ -1,2 +1,3 @@
 - Fix error with housing cornerstone visitor and purchase frame hooks
 - Add social frame support to Forever beta
+- Fix an issue on some frames where the close button is hard to click

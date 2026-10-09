@@ -469,6 +469,12 @@ function DeModalMixin:SetupFrame(f, fName)
         -- likely to cause taint or issues with the mouse inside the window
         self:HookMovable(f, fName, true)
         self:HookMovableHeader(f, hdr)
+        -- fix a common quirk on frames, particularly in the FULLSCREEN_DIALOG strata,
+        -- where the close button ends up behind the hdr
+        if (f.CloseButton and hdr and f.CloseButton:GetFrameStrata() == hdr:GetFrameStrata() and f.CloseButton:GetFrameLevel() <= hdr:GetFrameLevel()) then
+            Debug("fix close button frame level:", f.CloseButton:GetFrameLevel(), hdr:GetFrameLevel())
+            f.CloseButton:SetFrameLevel(hdr:GetFrameLevel() + 1)
+        end
     else
         -- hook the whole window for dragging
         self:HookMovable(f, fName)
