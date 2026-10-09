@@ -10,7 +10,7 @@ PKG.frameXML = {
     "BankFrame", "MailFrame", "GossipFrame", "QuestFrame",
     "MerchantFrame", "TabardFrame", "GuildRegistrarFrame", "ItemTextFrame",
     "PetStableFrame", "LFGDungeonReadyDialog", "QuestLogFrame", "TaxiFrame",
-    "ContainerFrameCombinedBags"
+    "ContainerFrameCombinedBags",
 }
 
 -- frames loaded with specific blizzard addons
@@ -43,6 +43,7 @@ PKG.addonFrames = {
     ["Blizzard_WorldMap"] = {"WorldMapFrame"},
     ["Blizzard_CooldownViewer"] = {"CooldownViewerSettings"},
     ["Blizzard_LegacySystem"] = {"LegacySystemFrame"},
+    ["Blizzard_GroupFinder_VanillaStyle"] = {"LFGParentFrame"},
 }
 
 -- frames that should be treated as protected even though IsProtected does not return true

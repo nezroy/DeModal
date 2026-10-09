@@ -1,1 +1,1 @@
-- Fix refactoring regression in protected frame deferred setup
+- Add LFG frame support to Forever beta

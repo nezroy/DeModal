@@ -454,7 +454,14 @@ function DeModalMixin:SetupFrame(f, fName)
     if not hdr and fName == "WorldMapFrame" then
         hdr = _G["WorldMapTitleButton"]
     end
-    if hdr then
+    if fName == "LFGParentFrame" then
+        -- The LFG parent/child frames are a whole new way of doing tabbed frame,
+        -- *again*.
+        self:HookMovable(f, fName, true)
+        self:HookMovableHeader(f, LFGListingFrame.TitleContainer)
+        self:HookMovableHeader(f, LFGBrowseFrame.TitleContainer)
+        self:HookMovableHeader(f, LFGWhoListFrame.TitleContainer)
+    elseif hdr then
         -- hook only the header for dragging; this is preferred because it's less
         -- likely to cause taint or issues with the mouse inside the window
         self:HookMovable(f, fName, true)
