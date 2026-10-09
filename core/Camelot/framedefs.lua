@@ -44,6 +44,7 @@ PKG.addonFrames = {
     ["Blizzard_CooldownViewer"] = {"CooldownViewerSettings"},
     ["Blizzard_LegacySystem"] = {"LegacySystemFrame"},
     ["Blizzard_GroupFinder_VanillaStyle"] = {"LFGParentFrame"},
+    ["Blizzard_SocialUI"] = {"SocialUIFrame"},
 }
 
 -- frames that should be treated as protected even though IsProtected does not return true

@@ -1,1 +1,2 @@
-- Add LFG frame support to Forever beta
+- Fix error with housing cornerstone visitor and purchase frame hooks
+- Add social frame support to Forever beta

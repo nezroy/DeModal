@@ -454,6 +454,9 @@ function DeModalMixin:SetupFrame(f, fName)
     if not hdr and fName == "WorldMapFrame" then
         hdr = _G["WorldMapTitleButton"]
     end
+    if fName == "HousingCornerstoneVisitorFrame" or fName == "HousingCornerstonePurchaseFrame" then
+        hdr = nil
+    end
     if fName == "LFGParentFrame" then
         -- The LFG parent/child frames are a whole new way of doing tabbed frame,
         -- *again*.
